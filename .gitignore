@@ -1,0 +1,11 @@
+# Simulation outputs
+*.vcd
+*.out
+*.vvp
+
+# AI System files
+.opencode/
+.agents/
+AGENTS.md
+RULES_MANIFEST.md
+SKILLS_MANIFEST.md
