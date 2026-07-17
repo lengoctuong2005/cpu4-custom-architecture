@@ -6,7 +6,7 @@
 #   make wave     -> mở GTKWave xem sóng
 #   make clean    -> xóa file trung gian
 
-IVERILOG = iverilog
+IVERILOG = iverilog -g2012
 VVP      = vvp
 GTKWAVE  = gtkwave
 OUT      = cpu_tb.out
@@ -30,4 +30,5 @@ wave: run
 	$(GTKWAVE) $(VCD)
 
 clean:
-	rm -f $(OUT) $(VCD)
+	powershell -Command "Remove-Item -ErrorAction SilentlyContinue -Force $(OUT), $(VCD); exit 0"
+
