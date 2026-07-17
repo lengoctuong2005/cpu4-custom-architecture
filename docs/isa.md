@@ -85,6 +85,13 @@
 > LDI dùng chung opcode `0011` với MOV, phân biệt bằng `imm_mode` (bit 8). LDI luôn
 > nạp vào R0; muốn đưa hằng số vào R1/R2/R3, dùng `LDI #imm` rồi `MOV Rx, R0`.
 
+> **Ràng buộc kiến trúc (flag pipeline):** Cờ Z/N được latch tại cạnh lênh clock để
+> lệnh nhánh đọc được kết quả của lệnh số học *trước đó*. Do đó lệnh `JZ`/`JN` phải
+> nằm **ngay sau** lệnh set-flag (ADD/SUB/AND/OR/XOR/INC/DEC/LDI), không được có
+> lệnh ALU nào chen giữa — nếu không flag đọc được là rác của lệnh chen giữa.
+> Đây là ràng buộc do thiết kế single-cycle không có pipeline, được chấp nhận
+> như một quy ước lập trình bắt buộc, không phải lỗi.
+
 ---
 
 ## 4. Tín hiệu điều khiển (Control Unit)
