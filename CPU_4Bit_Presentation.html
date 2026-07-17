@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Kỹ thuật: Thiết kế Vi xử lý 4-Bit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f3f4f6;
+            --bg-slide: #ffffff;
+            --text-main: #111827;
+            --text-body: #374151;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent-primary: #0f172a; /* Deep Navy */
+            --accent-blue: #2563eb;
+            --accent-red: #dc2626;
+            --accent-green: #059669;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Slide Container */
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            max-width: 1366px;
+            aspect-ratio: 16 / 9;
+            background: var(--bg-slide);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header / Footer branding on slides */
+        .slide-header {
+            position: absolute;
+            top: 40px; left: 60px; right: 60px;
+            display: flex; justify-content: space-between;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 12px;
+            z-index: 10;
+        }
+
+        .slide-footer {
+            position: absolute;
+            bottom: 30px; left: 60px; right: 60px;
+            display: flex; justify-content: space-between;
+            font-size: 0.85rem; font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        /* Slides */
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 100px 60px 60px 60px; /* space for header */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateX(20px);
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        /* Typography */
+        h1, h2, h3 { margin: 0; font-weight: 700; color: var(--text-main); }
+        h1 {
+            font-size: 3.5rem;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: var(--accent-primary);
+        }
+        h2 {
+            font-size: 2.25rem;
+            margin-bottom: 32px;
+            letter-spacing: -0.01em;
+        }
+        h3 { font-size: 1.25rem; margin-bottom: 12px; color: var(--accent-blue); }
+        p, li { font-size: 1.1rem; line-height: 1.6; color: var(--text-body); }
+        .mono { font-family: 'Fira Code', monospace; }
+
+        /* Grids & Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; height: 100%; align-items: start; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+        
+        /* Realistic CAD/EDA Diagram Containers */
+        .eda-diagram {
+            width: 100%;
+            height: auto;
+            border: 1px solid #d1d5db;
+            background: #f8fafc;
+            border-radius: 4px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+        .eda-header {
+            background: #e2e8f0;
+            padding: 6px 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: #475569;
+            border-bottom: 1px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Data Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 1rem; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        th { background: #f3f4f6; font-weight: 600; color: var(--accent-primary); }
+        td.mono { font-size: 0.9rem; }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+        .btn-nav {
+            background: none; border: none; color: var(--text-main);
+            cursor: pointer; display: flex; align-items: center; padding: 4px;
+            transition: color 0.2s;
+        }
+        .btn-nav:hover { color: var(--accent-blue); }
+        .btn-nav:disabled { color: #d1d5db; cursor: not-allowed; }
+        
+        .progress-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Cover -->
+        <div class="slide active" id="slide-1">
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; padding-left: 40px; max-width: 900px;">
+                <div style="font-family: 'Fira Code', monospace; color: var(--accent-blue); font-weight: 600; margin-bottom: 24px; letter-spacing: 0.05em;">
+                    BÁO CÁO KỸ THUẬT & THIẾT KẾ (TECHNICAL DESIGN REPORT)
+                </div>
+                <h1>Tài liệu Đặc tả Thiết kế Lõi Vi xử lý 4-Bit: RTL to GDSII</h1>
+                <p style="font-size: 1.35rem; margin-bottom: 48px; color: var(--text-body);">
+                    Phân tích toàn diện quy trình thiết kế vi mạch chuyên dụng (ASIC), bao gồm Kiến trúc tập lệnh (ISA), thiết kế Logic Datapath, Phân tích Timing (STA) và Layout Vật lý CMOS.
+                </p>
+                <div class="grid-3" style="border-top: 1px solid var(--border); padding-top: 32px;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Kiến trúc</div>
+                        <div style="font-size: 1.1rem; font-weight: 500;">Harvard 4-Bit Core</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Công nghệ</div>
+                        <div style="font-size: 1.1rem; font-weight: 500;">CMOS Standard Cell</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Quy trình (Flow)</div>
+                        <div style="font-size: 1.1rem; font-weight: 500;">Front-End & Back-End</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: ISA -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header"><span>Phần 1: Kiến trúc mức Hệ thống</span><span>Instruction Set Architecture (ISA)</span></div>
+            <h2>Đặc tả Kiến trúc Tập lệnh (ISA)</h2>
+            <div class="grid-2">
+                <div>
+                    <p>Bộ vi xử lý sử dụng kiến trúc RISC tối giản với độ dài lệnh cố định 8-bit. Việc giải mã lệnh (Instruction Decoding) được thực hiện trong một chu kỳ xung nhịp (Single-cycle execution).</p>
+                    <h3 style="margin-top: 24px;">Cấu trúc khung lệnh 8-bit:</h3>
+                    <table style="margin-bottom: 24px; text-align: center;">
+                        <tr>
+                            <th colspan="2">Opcode (Mã lệnh)</th>
+                            <th>Rs (Nguồn)</th>
+                            <th>Rd (Đích)</th>
+                        </tr>
+                        <tr class="mono">
+                            <td>Bit 7</td><td>Bit 6</td>
+                            <td colspan="2">Bit 5..3 (3 bit)</td>
+                            <td colspan="2">Bit 2..0 (3 bit)</td>
+                        </tr>
+                    </table>
+                    <h3>Bảng Tập Lệnh Cơ Bản</h3>
+                    <table>
+                        <tr><th>Mnemonic</th><th>Opcode</th><th>Chức năng</th><th>Cờ bị ảnh hưởng</th></tr>
+                        <tr><td class="mono">ADD Rd, Rs</td><td class="mono">00</td><td>Rd = Rd + Rs</td><td class="mono">Z, C</td></tr>
+                        <tr><td class="mono">SUB Rd, Rs</td><td class="mono">01</td><td>Rd = Rd - Rs</td><td class="mono">Z, C</td></tr>
+                        <tr><td class="mono">AND Rd, Rs</td><td class="mono">10</td><td>Rd = Rd & Rs</td><td class="mono">Z</td></tr>
+                        <tr><td class="mono">OR  Rd, Rs</td><td class="mono">11</td><td>Rd = Rd | Rs</td><td class="mono">Z</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <!-- Memory Map Diagram (Realistic technical style) -->
+                    <div class="eda-diagram">
+                        <div class="eda-header"><span>Memory_Mapping.view</span><span>System Architecture</span></div>
+                        <svg viewBox="0 0 500 400" style="width: 100%; height: 100%; background: #ffffff;">
+                            <defs>
+                                <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#f3f4f6" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#smallGrid)"/>
+                            
+                            <!-- Address Bus -->
+                            <path d="M 100 50 L 100 350" stroke="#111827" stroke-width="4"/>
+                            <text x="80" y="200" transform="rotate(-90 80,200)" font-family="Arial" font-size="12" fill="#4B5563">Hệ thống Bus Địa chỉ (Address Bus)</text>
+                            
+                            <!-- Instruction Memory Block -->
+                            <rect x="150" y="60" width="250" height="120" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+                            <text x="275" y="85" font-family="'Fira Code', monospace" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">INSTRUCTION ROM (8-bit)</text>
+                            <line x1="150" y1="100" x2="400" y2="100" stroke="#bfdbfe" stroke-width="1"/>
+                            <text x="160" y="115" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x00: 00 001 010 (ADD R1, R2)</text>
+                            <text x="160" y="135" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x01: 10 011 000 (AND R3, R0)</text>
+                            <text x="160" y="155" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x02: ... </text>
+                            
+                            <!-- Data Memory Block -->
+                            <rect x="150" y="220" width="250" height="120" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+                            <text x="275" y="245" font-family="'Fira Code', monospace" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">DATA RAM (4-bit)</text>
+                            <line x1="150" y1="260" x2="400" y2="260" stroke="#bbf7d0" stroke-width="1"/>
+                            <text x="160" y="275" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x0: 1010</text>
+                            <text x="160" y="295" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x1: 0011</text>
+                            <text x="160" y="315" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">...</text>
+
+                            <!-- Connections -->
+                            <path d="M 100 120 L 140 120" stroke="#111827" stroke-width="2"/>
+                            <polygon points="140,116 150,120 140,124" fill="#111827"/>
+                            
+                            <path d="M 100 280 L 140 280" stroke="#111827" stroke-width="2"/>
+                            <polygon points="140,276 150,280 140,284" fill="#111827"/>
+                        </svg>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Hình 1: Ánh xạ bộ nhớ theo kiến trúc Harvard (Tách biệt ROM lệnh 8-bit và RAM dữ liệu 4-bit).</p>
+                </div>
+            </div>
+            <div class="slide-footer"><span>File: isa_specs.v</span><span>Status: APPROVED</span></div>
+        </div>
+
+        <!-- Slide 3: RTL Schematic (Realistic) -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header"><span>Phần 2: Thiết kế Mức Register Transfer Level (RTL)</span><span>Datapath & Control Unit</span></div>
+            <h2>Sơ đồ khối RTL (RTL Schematic)</h2>
+            <p style="margin-bottom: 24px;">Sơ đồ dưới đây mô phỏng giao diện Netlist Viewer trên công cụ tổng hợp logic (ví dụ: Quartus Prime / Vivado), thể hiện chính xác cách các khối phần cứng được đấu nối vật lý thông qua các hệ thống bus và tín hiệu điều khiển.</p>
+            
+            <!-- Quartus/Vivado Style RTL Viewer -->
+            <div class="eda-diagram" style="height: 400px;">
+                <div class="eda-header"><span>RTL_Viewer - top_cpu.v</span><span>Technology Map: None</span></div>
+                <svg viewBox="0 0 1000 350" style="width: 100%; height: 100%; background: #e5e5e5;"> <!-- Light gray background typical of RTL viewers -->
+                    <!-- Background Grid -->
+                    <pattern id="rtlGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d4d4d4" stroke-width="1"/>
+                    </pattern>
+                    <rect width="100%" height="100%" fill="url(#rtlGrid)"/>
+                    
+                    <!-- Input Pins -->
+                    <path d="M 20 50 L 50 60 L 20 70 Z" fill="#fcd34d" stroke="#b45309" stroke-width="1"/>
+                    <text x="60" y="65" font-family="'Fira Code', monospace" font-size="12">clk</text>
+                    
+                    <path d="M 20 90 L 50 100 L 20 110 Z" fill="#fcd34d" stroke="#b45309" stroke-width="1"/>
+                    <text x="60" y="105" font-family="'Fira Code', monospace" font-size="12">rst_n</text>
+
+                    <!-- Modules -->
+                    <!-- PC Module -->
+                    <rect x="120" y="40" width="100" height="100" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                    <rect x="120" y="40" width="100" height="20" fill="#cbd5e1" stroke="#334155" stroke-width="1"/>
+                    <text x="170" y="54" font-family="Arial" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Prog_Counter</text>
+                    <circle cx="120" cy="80" r="3" fill="#3b82f6"/> <!-- clk pin -->
+                    <rect x="217" y="85" width="6" height="6" fill="#10b981"/> <!-- out pin -->
+                    
+                    <!-- Instruction Decoder (Control Unit) -->
+                    <rect x="300" y="40" width="120" height="140" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                    <rect x="300" y="40" width="120" height="20" fill="#cbd5e1" stroke="#334155" stroke-width="1"/>
+                    <text x="360" y="54" font-family="Arial" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Control_Unit</text>
+                    <rect x="297" y="85" width="6" height="6" fill="#3b82f6"/> <!-- in pin -->
+                    
+                    <!-- Register File -->
+                    <rect x="500" y="150" width="120" height="150" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                    <rect x="500" y="150" width="120" height="20" fill="#cbd5e1" stroke="#334155" stroke-width="1"/>
+                    <text x="560" y="164" font-family="Arial" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Register_File</text>
+                    <rect x="497" y="190" width="6" height="6" fill="#3b82f6"/> <!-- read addr 1 -->
+                    <rect x="497" y="220" width="6" height="6" fill="#3b82f6"/> <!-- read addr 2 -->
+                    <rect x="617" y="190" width="6" height="6" fill="#10b981"/> <!-- read data 1 -->
+                    <rect x="617" y="260" width="6" height="6" fill="#10b981"/> <!-- read data 2 -->
+
+                    <!-- ALU Module -->
+                    <rect x="720" y="170" width="100" height="110" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                    <rect x="720" y="170" width="100" height="20" fill="#cbd5e1" stroke="#334155" stroke-width="1"/>
+                    <text x="770" y="184" font-family="Arial" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">ALU_4Bit</text>
+                    <rect x="717" y="210" width="6" height="6" fill="#3b82f6"/> <!-- in A -->
+                    <rect x="717" y="250" width="6" height="6" fill="#3b82f6"/> <!-- in B -->
+                    <rect x="817" y="230" width="6" height="6" fill="#10b981"/> <!-- out -->
+
+                    <!-- Output Pins -->
+                    <path d="M 940 220 L 970 230 L 940 240 Z" fill="#10b981" stroke="#047857" stroke-width="1"/>
+                    <text x="910" y="234" font-family="'Fira Code', monospace" font-size="12">ALU_Out</text>
+
+                    <!-- Detailed Bus Lines (Thick dark blue lines) -->
+                    <!-- PC to Ctrl -->
+                    <path d="M 220 88 L 300 88" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+                    <line x1="255" y1="83" x2="265" y2="93" stroke="#1e3a8a" stroke-width="2"/>
+                    <text x="255" y="80" font-family="'Fira Code', monospace" font-size="10" fill="#1e3a8a">8</text>
+
+                    <!-- Ctrl to RegFile -->
+                    <path d="M 420 100 L 460 100 L 460 193 L 500 193" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+                    <line x1="455" y1="140" x2="465" y2="150" stroke="#1e3a8a" stroke-width="2"/>
+                    <text x="445" y="145" font-family="'Fira Code', monospace" font-size="10" fill="#1e3a8a">3</text>
+                    
+                    <path d="M 420 120 L 440 120 L 440 223 L 500 223" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+
+                    <!-- RegFile to ALU -->
+                    <path d="M 620 193 L 670 193 L 670 213 L 720 213" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+                    <line x1="640" y1="188" x2="650" y2="198" stroke="#1e3a8a" stroke-width="2"/>
+                    <text x="640" y="185" font-family="'Fira Code', monospace" font-size="10" fill="#1e3a8a">4</text>
+                    
+                    <path d="M 620 263 L 670 263 L 670 253 L 720 253" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+
+                    <!-- ALU Out -->
+                    <path d="M 820 233 L 940 233" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+                    <line x1="875" y1="228" x2="885" y2="238" stroke="#1e3a8a" stroke-width="2"/>
+                    <text x="875" y="225" font-family="'Fira Code', monospace" font-size="10" fill="#1e3a8a">4</text>
+                    
+                    <!-- Feedback loop (ALU out to RegFile Write Data) -->
+                    <path d="M 860 233 L 860 320 L 480 320 L 480 270 L 500 270" stroke="#1e3a8a" stroke-width="3" fill="none" stroke-dasharray="6 4"/>
+                    <text x="650" y="340" font-family="Arial" font-size="11" fill="#475569">Write-back Path</text>
+                </svg>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px; text-align: center;">Hình 2: Sơ đồ Datapath chi tiết sinh ra từ mã Verilog RTL, mô tả luồng dữ liệu 4-bit từ thanh ghi qua ALU và vòng phản hồi (Write-back).</p>
+            <div class="slide-footer"><span>Tool: Quartus Prime Pro / Synopsys Design Compiler</span><span>Top Module: cpu_core</span></div>
+        </div>
+
+        <!-- Slide 4: Simulation & Waveform -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header"><span>Phần 3: Phân tích Thời gian Tĩnh & Động</span><span>Functional Verification & STA</span></div>
+            <h2>Mô phỏng Dạng sóng (Waveform Simulation)</h2>
+            <p style="margin-bottom: 24px;">Việc xác minh logic được thực hiện qua công cụ mô phỏng (như ModelSim/Questasim). Dạng sóng dưới đây mô tả chu kỳ thực thi của lệnh <code>ADD R1, R2</code> (Mã Hex: <code>0x00</code>) và kiểm tra vi phạm Setup/Hold Time thực tế.</p>
+            
+            <!-- ModelSim Style Waveform -->
+            <div class="eda-diagram" style="background: #1e1e1e; height: 350px;">
+                <div class="eda-header" style="background: #2d2d2d; color: #d4d4d4; border-bottom: 1px solid #404040;">
+                    <span>ModelSim - Wave</span>
+                    <span>1.0 ns / div</span>
+                </div>
+                <svg viewBox="0 0 1000 300" style="width: 100%; height: 100%; background: #1e1e1e;">
+                    <!-- Time grid -->
+                    <line x1="200" y1="0" x2="200" y2="300" stroke="#333" stroke-width="1" stroke-dasharray="2 2"/>
+                    <line x1="400" y1="0" x2="400" y2="300" stroke="#333" stroke-width="1" stroke-dasharray="2 2"/>
+                    <line x1="600" y1="0" x2="600" y2="300" stroke="#333" stroke-width="1" stroke-dasharray="2 2"/>
+                    <line x1="800" y1="0" x2="800" y2="300" stroke="#333" stroke-width="1" stroke-dasharray="2 2"/>
+                    
+                    <text x="195" y="15" fill="#888" font-family="'Fira Code', monospace" font-size="10">10ns</text>
+                    <text x="395" y="15" fill="#888" font-family="'Fira Code', monospace" font-size="10">20ns</text>
+                    <text x="595" y="15" fill="#888" font-family="'Fira Code', monospace" font-size="10">30ns</text>
+
+                    <!-- Left Panel (Signal Names) -->
+                    <rect x="0" y="0" width="150" height="300" fill="#252526"/>
+                    <line x1="150" y1="0" x2="150" y2="300" stroke="#404040" stroke-width="2"/>
+                    
+                    <text x="10" y="55" fill="#4ec9b0" font-family="'Fira Code', monospace" font-size="14">clk</text>
+                    <text x="10" y="105" fill="#ce9178" font-family="'Fira Code', monospace" font-size="14">rst_n</text>
+                    <text x="10" y="155" fill="#9cdcfe" font-family="'Fira Code', monospace" font-size="14">opcode[7:0]</text>
+                    <text x="10" y="205" fill="#9cdcfe" font-family="'Fira Code', monospace" font-size="14">alu_out[3:0]</text>
+                    <text x="10" y="255" fill="#dcdcaa" font-family="'Fira Code', monospace" font-size="14">zero_flag</text>
+
+                    <!-- Signals Drawing -->
+                    <!-- clk (Green) with realistic slight slanted edges -->
+                    <path d="M 150 60 L 195 60 L 205 30 L 295 30 L 305 60 L 395 60 L 405 30 L 495 30 L 505 60 L 595 60 L 605 30 L 695 30 L 705 60 L 795 60 L 805 30 L 900 30" stroke="#4ec9b0" stroke-width="2" fill="none"/>
+                    
+                    <!-- rst_n (Red to Green) -->
+                    <path d="M 150 110 L 220 110 L 225 80 L 900 80" stroke="#ce9178" stroke-width="2" fill="none"/>
+
+                    <!-- Bus Signal: opcode (Hex representation) -->
+                    <g stroke="#9cdcfe" stroke-width="2" fill="none">
+                        <path d="M 150 145 L 250 145 L 255 145"/> 
+                        <!-- Undefined state crosshatch (Red X) before reset -->
+                        <path d="M 150 145 L 225 145 L 230 130 L 250 130" stroke="#f44336"/>
+                        <path d="M 150 160 L 225 160 L 230 145 L 250 145" stroke="#f44336"/>
+                        <!-- Hex Hexagon 1 -->
+                        <polygon points="230,145 235,130 395,130 400,145 395,160 235,160" fill="#2d2d2d" stroke="#9cdcfe"/>
+                        <text x="315" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">8'hFF (NOP)</text>
+                        <!-- Hex Hexagon 2 -->
+                        <polygon points="400,145 405,130 595,130 600,145 595,160 405,160" fill="#2d2d2d" stroke="#9cdcfe"/>
+                        <text x="500" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">8'h00 (ADD)</text>
+                        <!-- Hex Hexagon 3 -->
+                        <polygon points="600,145 605,130 795,130 800,145 795,160 605,160" fill="#2d2d2d" stroke="#9cdcfe"/>
+                        <text x="700" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">8'h01 (SUB)</text>
+                    </g>
+
+                    <!-- Bus Signal: alu_out -->
+                    <g stroke="#569cd6" stroke-width="2" fill="none">
+                        <!-- Unknown 'X' state in Red -->
+                        <path d="M 150 195 L 420 195 L 425 180" stroke="#f44336"/>
+                        <path d="M 150 210 L 420 210 L 425 195" stroke="#f44336"/>
+                        <rect x="150" y="180" width="270" height="30" fill="url(#crosshatch)" stroke="none"/>
+                        <!-- Data Hexagons -->
+                        <polygon points="425,195 430,180 620,180 625,195 620,210 430,210" fill="#2d2d2d" stroke="#569cd6"/>
+                        <text x="525" y="200" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">4'hA (10)</text>
+                        
+                        <polygon points="625,195 630,180 820,180 825,195 820,210 630,210" fill="#2d2d2d" stroke="#569cd6"/>
+                        <text x="725" y="200" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">4'h4 (4)</text>
+                    </g>
+                    
+                    <!-- Setup/Hold Highlight -->
+                    <rect x="385" y="120" width="30" height="100" fill="rgba(255, 235, 59, 0.2)" stroke="rgba(255, 235, 59, 0.5)" stroke-width="1"/>
+                    <text x="400" y="115" fill="#fde047" font-family="Arial" font-size="10" text-anchor="middle">Setup Window</text>
+                    
+                    <defs>
+                        <pattern id="crosshatch" width="8" height="8" patternUnits="userSpaceOnUse">
+                            <path d="M 0 8 L 8 0 M -2 2 L 2 -2 M 6 10 L 10 6" stroke="#f44336" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                </svg>
+            </div>
+            <div class="slide-footer"><span>File: tb_cpu_core.v</span><span>Frequency: 100MHz | Setup Margin: +0.2ns</span></div>
+        </div>
+
+        <!-- Slide 5: Physical Layout (Highly Realistic) -->
+        <div class="slide" id="slide-5">
+            <div class="slide-header"><span>Phần 4: Thiết kế Vật lý & Chế tạo</span><span>Physical Design & CMOS Layout</span></div>
+            <h2>Sơ đồ Layout Vật lý mức Transistor (GDSII)</h2>
+            <div class="grid-2">
+                <div>
+                    <p>Trong quy trình Back-End (Physical Design), mã RTL sau khi qua tổng hợp mức cổng (Gate-level Synthesis) sẽ được sắp xếp và đi dây (Place & Route). Dưới đây là mặt nạ layout thực tế của một cell logic cơ bản (Ví dụ: Cổng NAND 2 ngõ vào) mô phỏng giao diện phần mềm Cadence Virtuoso.</p>
+                    <h3 style="margin-top: 24px;">Các lớp mặt nạ (Mask Layers):</h3>
+                    <ul style="list-style-type: square; padding-left: 20px;">
+                        <li><span style="display:inline-block; width:12px; height:12px; background:rgba(255, 240, 150, 0.5); border:1px solid #d97706;"></span> <strong>N-Well:</strong> Giếng N bao bọc PMOS.</li>
+                        <li><span style="display:inline-block; width:12px; height:12px; background:rgba(34, 197, 94, 0.7); border:1px solid #14532d;"></span> <strong>Active (Diffusion):</strong> Vùng khuếch tán tạo N+ và P+.</li>
+                        <li><span style="display:inline-block; width:12px; height:12px; background:rgba(239, 68, 68, 0.8); border:1px solid #7f1d1d;"></span> <strong>Polysilicon (Gate):</strong> Cổng cực mang dòng điều khiển.</li>
+                        <li><span style="display:inline-block; width:12px; height:12px; background:rgba(59, 130, 246, 0.6); border:1px solid #1e3a8a;"></span> <strong>Metal 1 (Routing):</strong> Lớp kim loại đi dây cấp nguồn (VDD/GND) và tín hiệu.</li>
+                    </ul>
+                </div>
+                <div>
+                    <!-- Cadence Virtuoso Style Layout -->
+                    <div class="eda-diagram" style="background: #111827; height: 420px; border: 1px solid #000;">
+                        <div class="eda-header" style="background: #1f2937; color: #9ca3af; border-bottom: 1px solid #000;">
+                            <span>Virtuoso Layout Suite - NAND2X1</span>
+                            <span>Layer: ALL</span>
+                        </div>
+                        <svg viewBox="0 0 400 400" style="width: 100%; height: 100%; background: #0a0a0a;">
+                            <!-- Tiny Grid for layout -->
+                            <pattern id="layoutGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#1f2937" stroke-width="0.5"/>
+                            </pattern>
+                            <rect width="100%" height="100%" fill="url(#layoutGrid)"/>
+                            
+                            <!-- N-Well (Yellow hashed) -->
+                            <rect x="20" y="20" width="360" height="160" fill="rgba(255, 240, 150, 0.1)" stroke="#d97706" stroke-width="2" stroke-dasharray="4 2"/>
+                            <text x="30" y="40" fill="#d97706" font-family="'Fira Code', monospace" font-size="10">N-WELL</text>
+
+                            <!-- P-Diffusion in N-Well (Orange-ish) -->
+                            <rect x="100" y="70" width="200" height="60" fill="rgba(217, 119, 6, 0.5)" stroke="#78350f" stroke-width="2"/>
+                            
+                            <!-- N-Diffusion in P-Sub (Green-ish) -->
+                            <rect x="100" y="240" width="200" height="60" fill="rgba(34, 197, 94, 0.5)" stroke="#14532d" stroke-width="2"/>
+
+                            <!-- Polysilicon Gates (Red) -->
+                            <rect x="150" y="50" width="20" height="270" fill="rgba(239, 68, 68, 0.8)" stroke="#7f1d1d" stroke-width="2"/>
+                            <rect x="230" y="50" width="20" height="270" fill="rgba(239, 68, 68, 0.8)" stroke="#7f1d1d" stroke-width="2"/>
+
+                            <!-- Metal 1 Routing (Blue, semi-transparent) -->
+                            <!-- VDD Rail -->
+                            <rect x="0" y="30" width="400" height="30" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="2"/>
+                            <text x="10" y="50" fill="#fff" font-family="'Fira Code', monospace" font-size="12" font-weight="bold">VDD</text>
+                            <!-- GND Rail -->
+                            <rect x="0" y="340" width="400" height="30" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="2"/>
+                            <text x="10" y="360" fill="#fff" font-family="'Fira Code', monospace" font-size="12" font-weight="bold">GND</text>
+                            
+                            <!-- Internal Metal Routing -->
+                            <!-- Source PMOS to VDD -->
+                            <rect x="100" y="40" width="30" height="90" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="1"/>
+                            <rect x="270" y="40" width="30" height="90" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="1"/>
+                            <!-- Output Y routing -->
+                            <rect x="185" y="100" width="30" height="170" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="1"/>
+                            <rect x="215" y="130" width="100" height="20" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="1"/>
+                            <text x="325" y="145" fill="#fff" font-family="'Fira Code', monospace" font-size="12" font-weight="bold">OUT_Y</text>
+                            <!-- Source NMOS to GND -->
+                            <rect x="100" y="270" width="30" height="90" fill="rgba(59, 130, 246, 0.5)" stroke="#1e3a8a" stroke-width="1"/>
+
+                            <!-- Input labels on Poly -->
+                            <text x="135" y="335" fill="#ef4444" font-family="'Fira Code', monospace" font-size="12" font-weight="bold">IN_A</text>
+                            <text x="255" y="335" fill="#ef4444" font-family="'Fira Code', monospace" font-size="12" font-weight="bold">IN_B</text>
+
+                            <!-- Contacts (Vias - Black squares with white X) -->
+                            <g id="contact">
+                                <rect x="0" y="0" width="12" height="12" fill="#111" stroke="#fff" stroke-width="1"/>
+                                <line x1="0" y1="0" x2="12" y2="12" stroke="#fff" stroke-width="1"/>
+                                <line x1="12" y1="0" x2="0" y2="12" stroke="#fff" stroke-width="1"/>
+                            </g>
+                            
+                            <use href="#contact" x="109" y="45"/>
+                            <use href="#contact" x="279" y="45"/>
+                            <use href="#contact" x="109" y="94"/>
+                            <use href="#contact" x="279" y="94"/>
+                            
+                            <use href="#contact" x="194" y="94"/>
+                            <use href="#contact" x="194" y="264"/>
+                            
+                            <use href="#contact" x="109" y="349"/>
+                            <use href="#contact" x="109" y="264"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"><span>DRC Status: 0 Errors</span><span>LVS Status: MATCH</span></div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="controls">
+            <button class="btn-nav" id="prevBtn" onclick="changeSlide(-1)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="progress-text">
+                <span id="currentSlideNum">1</span> / 5
+            </div>
+            <button class="btn-nav" id="nextBtn" onclick="changeSlide(1)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentSlideNum = document.getElementById('currentSlideNum');
+
+        function updateUI() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            
+            currentSlideNum.textContent = currentSlide + 1;
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function changeSlide(direction) {
+            const newSlide = currentSlide + direction;
+            if (newSlide >= 0 && newSlide < slides.length) {
+                currentSlide = newSlide;
+                updateUI();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

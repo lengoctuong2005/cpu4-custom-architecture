@@ -1,0 +1,20 @@
+// Data memory initialization file for 4-bit CPU
+// 16 lines of 4-bit hex (addresses 0-15)
+// Preload test data at addresses 10 (0xA) and 11 (0xB)
+
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+5
+7
+0
+0
+0
+0

@@ -1,0 +1,35 @@
+// Program memory initialization file for 4-bit CPU
+// Format: 8-bit hex per line (16 lines for 16 instruction words)
+// Example program: Add Mem[10] + Mem[11] -> Mem[12], output result
+
+// Memory layout:
+// ROM (instruction memory): addresses 0-15
+// RAM (data memory): addresses 0-15, preload with test data
+
+// Instructions (16 words = 16 lines):
+// 0x00: LOAD  10      -> 0x1A (opcode=0001, operand=1010)
+// 0x01: MOV   R1, R0  -> 0x34 (opcode=0011, operand=0100)
+// 0x02: LOAD  11      -> 0x1B (opcode=0001, operand=1011)
+// 0x03: ADD   R1, R0  -> 0x44 (opcode=0100, operand=0100)
+// 0x04: MOV   R0, R1  -> 0x31 (opcode=0011, operand=0001)
+// 0x05: STORE 12      -> 0x2C (opcode=0010, operand=1100)
+// 0x06: OUT   R0      -> 0xE0 (opcode=1110, operand=0000)
+// 0x07: HALT          -> 0xF0 (opcode=1111, operand=0000)
+// 0x08-0x0F: NOP      -> 0x00
+
+1a
+34
+1b
+44
+31
+2c
+e0
+f0
+00
+00
+00
+00
+00
+00
+00
+00
