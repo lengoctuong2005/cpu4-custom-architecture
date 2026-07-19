@@ -23,6 +23,7 @@ module cpu_top (
     logic        reg_write, mem_read, mem_write, mem_to_reg, alu_src, pc_src;
     logic [2:0]  alu_op;
     logic [1:0]  reg_sel;
+    logic        flag_write;
 
     // Register File
     logic [3:0] read_data1, read_data2;
@@ -88,7 +89,8 @@ module cpu_top (
         .alu_src     (alu_src),
         .alu_op      (alu_op),
         .pc_src      (pc_src),
-        .reg_sel     (reg_sel)
+        .reg_sel     (reg_sel),
+        .flag_write  (flag_write)
     );
 
     // Register file write register selection
@@ -138,7 +140,7 @@ module cpu_top (
         if (!rst_n) begin
             zero_r    <= 1'b0;
             negative_r <= 1'b0;
-        end else begin
+        end else if (flag_write) begin
             zero_r    <= zero;
             negative_r <= negative;
         end
@@ -183,6 +185,7 @@ module cpu_top (
     assign debug_r0 = rf.r0;
 
     // ---- Testbench helper tasks (keep $readmemh / RAM writes inside cpu_top) ----
+    /* synthesis translate_off */
     // Load a hex program into the instruction ROM.
     task load_program(input string hex_path);
         $readmemh(hex_path, imem.rom);
@@ -199,5 +202,6 @@ module cpu_top (
         dmem.ram[10] = 4'h0;
         dmem.ram[11] = 4'h0;
     endtask
+    /* synthesis translate_on */
 
 endmodule

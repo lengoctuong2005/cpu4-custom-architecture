@@ -141,6 +141,15 @@ module tb_cpu_top;
             end
         end
 
+        // ---- FLAG: test flag_write with MOV in between ----
+        run_demo("FLAG", "sim/flag_test.hex", 4'd0, 4'd0, 1'b0);
+        if (out_port != 4'd12) begin
+            $error("FLAG VALUE CHECK FAILED: out_port=%0d, expected 12", out_port);
+            fail_count = fail_count + 1;
+        end else begin
+            $display("FLAG value check OK: OUT=12");
+        end
+
         $display("========================================");
         $display("RESULT: %0d PASS, %0d FAIL", pass_count, fail_count);
         $display("========================================");

@@ -12,7 +12,8 @@ module control_unit (
     output logic        alu_src,
     output logic [2:0]  alu_op,
     output logic        pc_src,
-    output logic [1:0]  reg_sel
+    output logic [1:0]  reg_sel,
+    output logic        flag_write
 );
 
     always @(opcode, imm_mode) begin
@@ -24,6 +25,7 @@ module control_unit (
         alu_src    = 1'b0;
         alu_op     = 3'b000;
         reg_sel    = 2'b00;
+        flag_write = 1'b0;
 
         case (opcode)
             4'b0000: begin // NOP
@@ -49,6 +51,7 @@ module control_unit (
                     alu_src    = 1'b1;    // chọn imm_val
                     alu_op     = 3'b111;  // PASSTHRU (giữ nguyên imm)
                     reg_sel    = 2'b00;   // R0 (implicit register)
+                    flag_write = 1'b1;
                 end else begin // MOV Rd, Rs (reg-reg)
                     reg_write  = 1'b1;
                     mem_to_reg = 1'b0;
@@ -63,6 +66,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b000; // ADD
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b0101: begin // SUB
                 reg_write  = 1'b1;
@@ -70,6 +74,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b001; // SUB
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b0110: begin // AND
                 reg_write  = 1'b1;
@@ -77,6 +82,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b010; // AND
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b0111: begin // OR
                 reg_write  = 1'b1;
@@ -84,6 +90,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b011; // OR
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b1000: begin // XOR
                 reg_write  = 1'b1;
@@ -91,6 +98,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b100; // XOR
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b1001: begin // INC
                 reg_write  = 1'b1;
@@ -98,6 +106,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b101; // INC
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b1010: begin // DEC
                 reg_write  = 1'b1;
@@ -105,6 +114,7 @@ module control_unit (
                 alu_src    = 1'b0;
                 alu_op     = 3'b110; // DEC
                 reg_sel    = 2'b01; // Rd
+                flag_write = 1'b1;
             end
             4'b1011: begin // JMP
                 // Handled continuously

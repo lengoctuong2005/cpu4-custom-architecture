@@ -12,8 +12,9 @@ module data_memory (
     logic [3:0] ram [0:15];
 
     // RAM khoi tao 0. Testbench se nap du lieu dau vao (preload) tuy tung chuong trinh.
+    integer i;
     initial begin
-        for (int i = 0; i < 16; i = i + 1)
+        for (i = 0; i < 16; i = i + 1)
             ram[i] = 4'h0;
     end
 

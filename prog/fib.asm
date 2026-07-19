@@ -1,5 +1,5 @@
 ; fib.asm - Fibonacci sequence (4-bit), stop when result > 7
-; Output: 1, 1, 2, 3, 5, 8 (next 13 has bit3=1 -> N=1 -> stop)
+; Output: 1, 1, 2, 3, 5, 8 (value 8 = 1000 has bit3=1 -> N=1 -> stop after outputting 8)
 LDI   #1      ; R0 = 1
 MOV   R1, R0  ; R1 = 1 (F_a)
 MOV   R2, R0  ; R2 = 1 (F_b)

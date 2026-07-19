@@ -7,9 +7,9 @@ module instruction_memory (
 
     logic [8:0] rom [0:15];
 
-    // ROM khoi tao bang 0. Testbench se nap chuong trinh qua $readmemh.
+    integer i;
     initial begin
-        for (int i = 0; i < 16; i++) rom[i] = 9'h000;
+        for (i = 0; i < 16; i++) rom[i] = 9'h000;
     end
 
     assign instruction = rom[addr];
