@@ -104,8 +104,7 @@ class CPU:
         instr = self.rom[self.pc]
         opcode = (instr >> 4) & 0xF
         operand = instr & 0xF
-        imm_mode = (instr >> 8) & 1
-        imm_val = operand & 0x3        # imm 2-bit (zero-extended)
+        imm_mode = (instr >> 8) & 1    # 1 => LDI (immediate load into R0)
         mnem = OPCODES[opcode]
         next_pc = mask4(self.pc + 1)
 

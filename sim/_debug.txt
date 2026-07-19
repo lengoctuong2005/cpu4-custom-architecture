@@ -1,2 +1,0 @@
-MUL line8 raw: b'MOV   R2, #0  ; R2 = 0 (accumulator)'
-FIB line4 raw: b'MOV   R1, #1  ; R1 = 1 (F_a)'

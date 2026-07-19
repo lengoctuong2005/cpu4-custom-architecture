@@ -56,7 +56,7 @@ gtkwave cpu_top.vcd
 | File | Vai trò |
 | :--- | :--- |
 | `rtl/*.v` | Code RTL các module CPU |
-| `sim/prog.hex` | Chương trình mã máy (1 byte hex/dòng) nạp vào ROM |
+| `sim/prog.hex` | Chương trình mã máy (9-bit = 3 ký tự hex/dòng) nạp vào ROM qua `$readmemh` |
 | `sim/prog.mem` | Bản có chú thích, để người đọc hiểu (ROM không đọc file này) |
 | `tb/tb_cpu_top.v` | Testbench toàn CPU, xuất waveform `cpu_top.vcd` |
 | `tools/assembler.py` | (Phase 2) dịch `.asm` → `prog.hex` |

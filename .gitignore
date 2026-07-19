@@ -1,11 +1,20 @@
-# Simulation outputs
+# ── Simulation outputs (Icarus Verilog / GTKWave) ──────────────
 *.vcd
 *.out
 *.vvp
+sim/_debug.txt
 
-# AI System files
+# ── Node / npm (presentation generator only) ───────────────────
+node_modules/
+
+# ── Python caches ──────────────────────────────────────────────
+__pycache__/
+*.pyc
+
+# ── AI tooling artifacts (do NOT commit) ───────────────────────
 .opencode/
 .agents/
+.manifest_cache.json
 AGENTS.md
 RULES_MANIFEST.md
 SKILLS_MANIFEST.md

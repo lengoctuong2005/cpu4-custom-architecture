@@ -1,35 +1,28 @@
-// Program memory initialization file for 4-bit CPU
-// Format: 8-bit hex per line (16 lines for 16 instruction words)
-// Example program: Add Mem[10] + Mem[11] -> Mem[12], output result
+// Annotated instruction listing for the ADD demo (human-readable ONLY).
+// The ROM is loaded from sim/prog.hex via $readmemh; this file is NOT read
+// by the RTL. It mirrors sim/prog.hex so a reader can decode each word.
+//
+// Instruction word = 9 bits = 3 hex chars per line:
+//   [8]   imm_mode   [7:4] opcode   [3:0] operand
+//
+// Program: Mem[10] + Mem[11] -> Mem[12], then OUT the sum.
+// RAM is preloaded by the testbench (Mem[10]=5, Mem[11]=7) -> Mem[12]=12.
+//
+// addr  hex   imm opcode      operand       meaning
+// 0x00: 01A    0  0001 LOAD   1010 (=10)    R0 = Mem[10] = 5
+// 0x01: 034    0  0011 MOV    0100 (Rd1,Rs0) R1 = R0 = 5
+// 0x02: 01B    0  0001 LOAD   1011 (=11)    R0 = Mem[11] = 7
+// 0x03: 044    0  0100 ADD    0100 (Rd1,Rs0) R1 = R1 + R0 = 12
+// 0x04: 031    0  0011 MOV    0001 (Rd0,Rs1) R0 = R1 = 12
+// 0x05: 02C    0  0010 STORE  1100 (=12)    Mem[12] = R0 = 12
+// 0x06: 0E0    0  1110 OUT    0000 (Rs0)    OUT = R0 = 12
+// 0x07: 0F0    0  1111 HALT   0000          freeze PC
 
-// Memory layout:
-// ROM (instruction memory): addresses 0-15
-// RAM (data memory): addresses 0-15, preload with test data
-
-// Instructions (16 words = 16 lines):
-// 0x00: LOAD  10      -> 0x1A (opcode=0001, operand=1010)
-// 0x01: MOV   R1, R0  -> 0x34 (opcode=0011, operand=0100)
-// 0x02: LOAD  11      -> 0x1B (opcode=0001, operand=1011)
-// 0x03: ADD   R1, R0  -> 0x44 (opcode=0100, operand=0100)
-// 0x04: MOV   R0, R1  -> 0x31 (opcode=0011, operand=0001)
-// 0x05: STORE 12      -> 0x2C (opcode=0010, operand=1100)
-// 0x06: OUT   R0      -> 0xE0 (opcode=1110, operand=0000)
-// 0x07: HALT          -> 0xF0 (opcode=1111, operand=0000)
-// 0x08-0x0F: NOP      -> 0x00
-
-1a
-34
-1b
-44
-31
-2c
-e0
-f0
-00
-00
-00
-00
-00
-00
-00
-00
+01A
+034
+01B
+044
+031
+02C
+0E0
+0F0
