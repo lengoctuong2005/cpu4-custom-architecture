@@ -34,10 +34,10 @@
 ## 2. Định dạng từ lệnh (9 bit)
 
 ```
-+-----------+-----------------------+
-| imm_mode  |  Opcode (4 bit)      |  Operand (4 bit)     |
-|  bit [8]  |   bit [7:4]          |      bit [3:0]       |
-+-----------+-----------------------+
++-----------+------------------+------------------+
+| imm_mode  |  Opcode (4 bit)  |  Operand (4 bit) |
+|  bit [8]  |    bit [7:4]     |     bit [3:0]    |
++-----------+------------------+------------------+
 ```
 
 - `imm_mode = 0`: lệnh thanh ghi – thanh ghi hoặc nhảy/nhớ.
@@ -150,7 +150,7 @@ Kết quả đúng: `Mem[12] = 12 = 0xC`, cờ Z = 0, N = 0 (12 < 16).
 - `rtl/control_unit.v` — giải mã opcode → tín hiệu điều khiển.
 - `rtl/program_counter.v` — bộ đếm PC 4 bit.
 - `rtl/cpu_top.v` — liên kết datapath single-cycle.
-- `tools/assembler.py` — bộ hợp dịchch .asm → .hex (9-bit, 3 ký tự hex/dòng).
+- `tools/assembler.py` — bộ hợp dịch .asm → .hex (9-bit, 3 ký tự hex/dòng).
 - `tools/sim_cpu.py` — mô phỏng hành vi tham chiếu (Python).
 - `sim/*.hex` — chương trình mã máy + dữ liệu khởi tạo.
 - `tb/tb_*.v` — testbench từng module và toàn bộ CPU.
