@@ -18,14 +18,10 @@ kiểm chứng bằng mô phỏng functional (Icarus Verilog). Đề tài chốt
 | Độ rộng dữ liệu | 4 bit |
 | Độ rộng từ lệnh | 9 bit — `[8] imm_mode · [7:4] opcode · [3:0] operand` |
 | Thanh ghi | R0–R3 (4 bit); R0 là accumulator cho LOAD/STORE |
-| Cờ trạng thái | Zero (Z), Negative (N), Carry (C) |
+| Cờ trạng thái | Zero (Z), Negative (N) |
 | Bộ nhớ lệnh (ROM) | 16 × 9 bit |
 | Bộ nhớ dữ liệu (RAM) | 16 × 4 bit |
 | Tập lệnh | 16 opcode (NOP, LOAD, STORE, MOV/LDI, ADD, SUB, AND, OR, XOR, INC, DEC, JMP, JZ, JN, OUT, HALT) |
-
-**Quy ước cờ Carry (quan trọng):** với `SUB`/`DEC`, `C = 1` nghĩa là **không mượn**
-(`a >= b`), `C = 0` nghĩa là **có mượn** (`a < b`). Với `ADD`/`INC`, `C = 1` khi
-tràn bit thứ 4.
 
 ---
 
@@ -99,7 +95,4 @@ python3 tools/sim_cpu.py   sim/fib.hex --trace
 
 ## 6. Ràng buộc thiết kế cần biết
 
-Vì là single-cycle **không có pipeline**, cờ Z/N được latch tại cạnh xung clock.
-Do đó `JZ`/`JN` phải nằm **ngay sau** lệnh set-flag (ADD/SUB/AND/OR/XOR/INC/DEC/LDI),
-không được chèn lệnh ALU khác vào giữa. Đây là quy ước lập trình bắt buộc, không
-phải lỗi — xem chi tiết trong [`docs/isa.md`](docs/isa.md).
+Cờ Z/N được chốt có điều kiện qua `flag_write`; chỉ lệnh sinh cờ (ADD/SUB/AND/OR/XOR/INC/DEC/LDI) mới ghi đè. Có thể chèn lệnh không sinh cờ (MOV/LOAD/STORE/NOP/OUT) giữa lệnh set-flag và JZ/JN.

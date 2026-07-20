@@ -528,8 +528,8 @@ def build_html():
                 <li><a href="#chuong-4-mo-phong-rtl-kiem-thu-chuc-nang">4. Kết quả mô phỏng RTL</a></li>
                 <li><a href="#chuong-5-logic-synthesis-thong-ke-tai-nguyen">5. Logic Synthesis</a></li>
                 <li><a href="#chuong-6-bao-cao-dinh-thoi-phan-tich-duong-tre-toi-han">6. Báo cáo định thời</a></li>
-                <li><a href="#chuong-7-layout-vat-ly-gdsii-quy-trinh-openlane">7. Layout vật lý (GDS)</a></li>
-                <li><a href="#chuong-8-loi-thiet-ke-vat-ly-giai-phap-khac-phuc">8. Lỗi &amp; Giải pháp</a></li>
+                <li><a href="#chuong-7-lich-su-phat-trien-va-han-che-cua-thiet-ke-ban-au-chot-co-vo-ieu-kien">7. Lịch sử phát triển & Hạn chế</a></li>
+                <li><a href="#chuong-8-kiem-chung-chuc-nang-thuc-nghiem">8. Kiểm chứng &amp; Thực nghiệm</a></li>
                 <li><a href="#ket-luan">Kết luận</a></li>
                 <li><a href="#appendix">Phụ lục: Mã nguồn</a></li>
             </ul>

@@ -80,8 +80,8 @@ module cpu_top (
     control_unit ctrl (
         .opcode      (opcode),
         .imm_mode    (imm_mode),
-        .zero        (zero_r),
-        .negative    (negative_r),
+        .flag_zero_in(zero_r),
+        .flag_neg_in (negative_r),
         .reg_write   (reg_write),
         .mem_read    (mem_read),
         .mem_write   (mem_write),

@@ -2,8 +2,8 @@
 
 module control_unit (
     input  logic [3:0]  opcode,
-    input  logic        zero,
-    input  logic        negative,
+    input  logic        flag_zero_in,
+    input  logic        flag_neg_in,
     input  logic        imm_mode,
     output logic        reg_write,
     output logic        mem_read,
@@ -16,7 +16,7 @@ module control_unit (
     output logic        flag_write
 );
 
-    always @(opcode, imm_mode) begin
+    always_comb begin
         // defaults
         reg_write  = 1'b0;
         mem_read   = 1'b0;
@@ -139,8 +139,8 @@ module control_unit (
     end
 
     assign pc_src = (opcode == 4'b1011) ? 1'b1 :
-                    (opcode == 4'b1100) ? zero :
-                    (opcode == 4'b1101) ? negative :
+                    (opcode == 4'b1100) ? flag_zero_in :
+                    (opcode == 4'b1101) ? flag_neg_in :
                     1'b0;
 
 endmodule

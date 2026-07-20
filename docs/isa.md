@@ -14,7 +14,7 @@
 | Độ rộng từ lệnh | 9 bit |
 | Độ rộng dữ liệu | 4 bit |
 | Thanh ghi | 4 thanh ghi đa dụng R0–R3 (4 bit mỗi thanh ghi) |
-| Thanh ghi cờ | Zero (Z), Negative (N), Carry (C) |
+| Thanh ghi cờ | Zero (Z), Negative (N) |
 | Bộ nhớ chỉ lệnh (ROM) | 16 × 9 bit (địa chỉ 4 bit) |
 | Bộ nhớ dữ liệu (RAM) | 16 × 4 bit (địa chỉ 4 bit) |
 | Bộ đếm chương trình PC | 4 bit (0–15) |
@@ -65,14 +65,14 @@
 | `0001` | `LOAD addr` | addr | `R0 ← Mem[addr]` | không |
 | `0010` | `STORE addr` | addr | `Mem[addr] ← R0` | không |
 | `0011` | `MOV Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rs]` | không |
-| `0011` | `LDI #imm` | imm (imm_mode=1) | `R0 ← imm` (imm 0–15) | Z, N (C=0) |
-| `0100` | `ADD Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] + R[Rs]` | Z, N, C |
-| `0101` | `SUB Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] - R[Rs]` | Z, N, C |
+| `0011` | `LDI #imm` | imm (imm_mode=1) | `R0 ← imm` (imm 0–15) | Z, N |
+| `0100` | `ADD Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] + R[Rs]` | Z, N |
+| `0101` | `SUB Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] - R[Rs]` | Z, N |
 | `0110` | `AND Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] & R[Rs]` | Z, N |
 | `0111` | `OR Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] \| R[Rs]` | Z, N |
 | `1000` | `XOR Rd, Rs` | `[Rd:Rs]` | `R[Rd] ← R[Rd] ^ R[Rs]` | Z, N |
-| `1001` | `INC Rd` | `Rd` | `R[Rd] ← R[Rd] + 1` | Z, N, C |
-| `1010` | `DEC Rd` | `Rd` | `R[Rd] ← R[Rd] - 1` | Z, N, C |
+| `1001` | `INC Rd` | `Rd` | `R[Rd] ← R[Rd] + 1` | Z, N |
+| `1010` | `DEC Rd` | `Rd` | `R[Rd] ← R[Rd] - 1` | Z, N |
 | `1011` | `JMP addr` | addr | `PC ← addr` | không |
 | `1100` | `JZ addr` | addr | `if Z=1: PC ← addr` | không |
 | `1101` | `JN addr` | addr | `if N=1: PC ← addr` | không |
@@ -80,17 +80,12 @@
 | `1111` | `HALT` | — | Đóng băng PC, dừng thực thi | không |
 
 > Quy ước cờ: **Z** = 1 khi kết quả = 0; **N** = 1 khi bit cao nhất của kết quả = 1
-> (số có dấu bù 2, bit 3); **C** = 1 khi phép cộng/trừ sinh bit nhớ (bit 4 của kết quả 5 bit).
+> (số có dấu bù 2, bit 3).
 
 > LDI dùng chung opcode `0011` với MOV, phân biệt bằng `imm_mode` (bit 8). LDI luôn
 > nạp vào R0; muốn đưa hằng số vào R1/R2/R3, dùng `LDI #imm` rồi `MOV Rx, R0`.
 
-> **Ràng buộc kiến trúc (flag pipeline):** Cờ Z/N được latch tại cạnh lênh clock để
-> lệnh nhánh đọc được kết quả của lệnh số học *trước đó*. Do đó lệnh `JZ`/`JN` phải
-> nằm **ngay sau** lệnh set-flag (ADD/SUB/AND/OR/XOR/INC/DEC/LDI), không được có
-> lệnh ALU nào chen giữa — nếu không flag đọc được là rác của lệnh chen giữa.
-> Đây là ràng buộc do thiết kế single-cycle không có pipeline, được chấp nhận
-> như một quy ước lập trình bắt buộc, không phải lỗi.
+> **Ràng buộc kiến trúc (flag pipeline):** Cờ Z/N được chốt có điều kiện qua `flag_write`; chỉ lệnh sinh cờ (ADD/SUB/AND/OR/XOR/INC/DEC/LDI) mới ghi đè. Có thể chèn lệnh không sinh cờ (MOV/LOAD/STORE/NOP/OUT) giữa lệnh set-flag và JZ/JN.
 
 ---
 

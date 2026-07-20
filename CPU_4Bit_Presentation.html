@@ -212,27 +212,27 @@
             <h2>Đặc tả Kiến trúc Tập lệnh (ISA)</h2>
             <div class="grid-2">
                 <div>
-                    <p>Bộ vi xử lý sử dụng kiến trúc RISC tối giản với độ dài lệnh cố định 8-bit. Việc giải mã lệnh (Instruction Decoding) được thực hiện trong một chu kỳ xung nhịp (Single-cycle execution).</p>
-                    <h3 style="margin-top: 24px;">Cấu trúc khung lệnh 8-bit:</h3>
+                    <p>Bộ vi xử lý sử dụng kiến trúc RISC tối giản với độ dài lệnh cố định 9-bit. Việc giải mã lệnh (Instruction Decoding) được thực hiện trong một chu kỳ xung nhịp (Single-cycle execution).</p>
+                    <h3 style="margin-top: 24px;">Cấu trúc khung lệnh 9-bit:</h3>
                     <table style="margin-bottom: 24px; text-align: center;">
                         <tr>
-                            <th colspan="2">Opcode (Mã lệnh)</th>
-                            <th>Rs (Nguồn)</th>
-                            <th>Rd (Đích)</th>
+                            <th>imm_mode</th>
+                            <th>Opcode (4 bit)</th>
+                            <th>Operand (4 bit)</th>
                         </tr>
                         <tr class="mono">
-                            <td>Bit 7</td><td>Bit 6</td>
-                            <td colspan="2">Bit 5..3 (3 bit)</td>
-                            <td colspan="2">Bit 2..0 (3 bit)</td>
+                            <td>Bit 8</td>
+                            <td>Bit 7..4</td>
+                            <td>Bit 3..0</td>
                         </tr>
                     </table>
                     <h3>Bảng Tập Lệnh Cơ Bản</h3>
                     <table>
                         <tr><th>Mnemonic</th><th>Opcode</th><th>Chức năng</th><th>Cờ bị ảnh hưởng</th></tr>
-                        <tr><td class="mono">ADD Rd, Rs</td><td class="mono">00</td><td>Rd = Rd + Rs</td><td class="mono">Z, C</td></tr>
-                        <tr><td class="mono">SUB Rd, Rs</td><td class="mono">01</td><td>Rd = Rd - Rs</td><td class="mono">Z, C</td></tr>
-                        <tr><td class="mono">AND Rd, Rs</td><td class="mono">10</td><td>Rd = Rd & Rs</td><td class="mono">Z</td></tr>
-                        <tr><td class="mono">OR  Rd, Rs</td><td class="mono">11</td><td>Rd = Rd | Rs</td><td class="mono">Z</td></tr>
+                        <tr><td class="mono">ADD Rd, Rs</td><td class="mono">0100</td><td>R[Rd] = R[Rd] + R[Rs]</td><td class="mono">Z, N</td></tr>
+                        <tr><td class="mono">SUB Rd, Rs</td><td class="mono">0101</td><td>R[Rd] = R[Rd] - R[Rs]</td><td class="mono">Z, N</td></tr>
+                        <tr><td class="mono">AND Rd, Rs</td><td class="mono">0110</td><td>R[Rd] = R[Rd] &amp; R[Rs]</td><td class="mono">Z, N</td></tr>
+                        <tr><td class="mono">OR  Rd, Rs</td><td class="mono">0111</td><td>R[Rd] = R[Rd] | R[Rs]</td><td class="mono">Z, N</td></tr>
                     </table>
                 </div>
                 <div>
@@ -253,7 +253,7 @@
                             
                             <!-- Instruction Memory Block -->
                             <rect x="150" y="60" width="250" height="120" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-                            <text x="275" y="85" font-family="'Fira Code', monospace" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">INSTRUCTION ROM (8-bit)</text>
+                            <text x="275" y="85" font-family="'Fira Code', monospace" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">INSTRUCTION ROM (16×9-bit)</text>
                             <line x1="150" y1="100" x2="400" y2="100" stroke="#bfdbfe" stroke-width="1"/>
                             <text x="160" y="115" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x00: 00 001 010 (ADD R1, R2)</text>
                             <text x="160" y="135" font-family="'Fira Code', monospace" font-size="10" fill="#64748b">0x01: 10 011 000 (AND R3, R0)</text>
@@ -275,21 +275,22 @@
                             <polygon points="140,276 150,280 140,284" fill="#111827"/>
                         </svg>
                     </div>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Hình 1: Ánh xạ bộ nhớ theo kiến trúc Harvard (Tách biệt ROM lệnh 8-bit và RAM dữ liệu 4-bit).</p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Hình 1: Ánh xạ bộ nhớ theo kiến trúc Harvard (Tách biệt ROM lệnh 9-bit và RAM dữ liệu 4-bit).</p>
                 </div>
             </div>
-            <div class="slide-footer"><span>File: isa_specs.v</span><span>Status: APPROVED</span></div>
+            <div class="slide-footer"><span>File: docs/isa.md</span><span>Status: APPROVED</span></div>
         </div>
 
         <!-- Slide 3: RTL Schematic (Realistic) -->
         <div class="slide" id="slide-3">
             <div class="slide-header"><span>Phần 2: Thiết kế Mức Register Transfer Level (RTL)</span><span>Datapath & Control Unit</span></div>
             <h2>Sơ đồ khối RTL (RTL Schematic)</h2>
-            <p style="margin-bottom: 24px;">Sơ đồ dưới đây mô phỏng giao diện Netlist Viewer trên công cụ tổng hợp logic (ví dụ: Quartus Prime / Vivado), thể hiện chính xác cách các khối phần cứng được đấu nối vật lý thông qua các hệ thống bus và tín hiệu điều khiển.</p>
+            <p style="margin-bottom: 24px;">Sơ đồ dưới đây mô phỏng giao diện Netlist Viewer trên công cụ tổng hợp logic (ví dụ: Yosys), thể hiện chính xác cách các khối phần cứng được đấu nối vật lý thông qua các hệ thống bus và tín hiệu điều khiển.</p>
             
-            <!-- Quartus/Vivado Style RTL Viewer -->
-            <div class="eda-diagram" style="height: 400px;">
-                <div class="eda-header"><span>RTL_Viewer - top_cpu.v</span><span>Technology Map: None</span></div>
+            <!-- Yosys Style RTL Viewer -->
+            <div class="eda-diagram" style="background: #1e1e1e; height: 350px;">
+                <div class="eda-header" style="background: #2d2d2d; color: #d4d4d4; border-bottom: 1px solid #404040;">
+                    <span>RTL_Viewer - cpu_top.v</span><span>Technology Map: None</span></div>
                 <svg viewBox="0 0 1000 350" style="width: 100%; height: 100%; background: #e5e5e5;"> <!-- Light gray background typical of RTL viewers -->
                     <!-- Background Grid -->
                     <pattern id="rtlGrid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -370,19 +371,19 @@
                 </svg>
             </div>
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px; text-align: center;">Hình 2: Sơ đồ Datapath chi tiết sinh ra từ mã Verilog RTL, mô tả luồng dữ liệu 4-bit từ thanh ghi qua ALU và vòng phản hồi (Write-back).</p>
-            <div class="slide-footer"><span>Tool: Quartus Prime Pro / Synopsys Design Compiler</span><span>Top Module: cpu_core</span></div>
+            <div class="slide-footer"><span>Tool: Icarus Verilog + Yosys</span><span>Top Module: cpu_top</span></div>
         </div>
 
         <!-- Slide 4: Simulation & Waveform -->
         <div class="slide" id="slide-4">
             <div class="slide-header"><span>Phần 3: Phân tích Thời gian Tĩnh & Động</span><span>Functional Verification & STA</span></div>
             <h2>Mô phỏng Dạng sóng (Waveform Simulation)</h2>
-            <p style="margin-bottom: 24px;">Việc xác minh logic được thực hiện qua công cụ mô phỏng (như ModelSim/Questasim). Dạng sóng dưới đây mô tả chu kỳ thực thi của lệnh <code>ADD R1, R2</code> (Mã Hex: <code>0x00</code>) và kiểm tra vi phạm Setup/Hold Time thực tế.</p>
+            <p style="margin-bottom: 24px;">Việc xác minh logic được thực hiện qua công cụ mô phỏng (như Icarus Verilog + GTKWave). Dạng sóng dưới đây mô tả chu kỳ thực thi của lệnh <code>ADD R1, R2</code> (Mã Hex: <code>0x046</code>) và kiểm tra vi phạm Setup/Hold Time thực tế.</p>
             
-            <!-- ModelSim Style Waveform -->
+            <!-- GTKWave Style Waveform -->
             <div class="eda-diagram" style="background: #1e1e1e; height: 350px;">
                 <div class="eda-header" style="background: #2d2d2d; color: #d4d4d4; border-bottom: 1px solid #404040;">
-                    <span>ModelSim - Wave</span>
+                    <span>GTKWave - Wave</span>
                     <span>1.0 ns / div</span>
                 </div>
                 <svg viewBox="0 0 1000 300" style="width: 100%; height: 100%; background: #1e1e1e;">
@@ -402,7 +403,7 @@
                     
                     <text x="10" y="55" fill="#4ec9b0" font-family="'Fira Code', monospace" font-size="14">clk</text>
                     <text x="10" y="105" fill="#ce9178" font-family="'Fira Code', monospace" font-size="14">rst_n</text>
-                    <text x="10" y="155" fill="#9cdcfe" font-family="'Fira Code', monospace" font-size="14">opcode[7:0]</text>
+                    <text x="10" y="155" fill="#9cdcfe" font-family="'Fira Code', monospace" font-size="14">instruction[8:0]</text>
                     <text x="10" y="205" fill="#9cdcfe" font-family="'Fira Code', monospace" font-size="14">alu_out[3:0]</text>
                     <text x="10" y="255" fill="#dcdcaa" font-family="'Fira Code', monospace" font-size="14">zero_flag</text>
 
@@ -421,7 +422,7 @@
                         <path d="M 150 160 L 225 160 L 230 145 L 250 145" stroke="#f44336"/>
                         <!-- Hex Hexagon 1 -->
                         <polygon points="230,145 235,130 395,130 400,145 395,160 235,160" fill="#2d2d2d" stroke="#9cdcfe"/>
-                        <text x="315" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">8'hFF (NOP)</text>
+                        <text x="315" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">9'h000 (NOP)</text>
                         <!-- Hex Hexagon 2 -->
                         <polygon points="400,145 405,130 595,130 600,145 595,160 405,160" fill="#2d2d2d" stroke="#9cdcfe"/>
                         <text x="500" y="150" fill="#fff" font-family="'Fira Code', monospace" font-size="12" text-anchor="middle">8'h00 (ADD)</text>
@@ -455,7 +456,7 @@
                     </defs>
                 </svg>
             </div>
-            <div class="slide-footer"><span>File: tb_cpu_core.v</span><span>Frequency: 100MHz | Setup Margin: +0.2ns</span></div>
+            <div class="slide-footer"><span>File: tb/tb_cpu_top.v</span><span>Frequency: 100MHz | Setup Margin: +0.2ns</span></div>
         </div>
 
         <!-- Slide 5: Physical Layout (Highly Realistic) -->

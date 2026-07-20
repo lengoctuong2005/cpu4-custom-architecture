@@ -453,8 +453,8 @@
                 <li><a href="#chuong-4-mo-phong-rtl-kiem-thu-chuc-nang">4. Kết quả mô phỏng RTL</a></li>
                 <li><a href="#chuong-5-logic-synthesis-thong-ke-tai-nguyen">5. Logic Synthesis</a></li>
                 <li><a href="#chuong-6-bao-cao-dinh-thoi-phan-tich-duong-tre-toi-han">6. Báo cáo định thời</a></li>
-                <li><a href="#chuong-7-layout-vat-ly-gdsii-quy-trinh-openlane">7. Layout vật lý (GDS)</a></li>
-                <li><a href="#chuong-8-loi-thiet-ke-vat-ly-giai-phap-khac-phuc">8. Lỗi &amp; Giải pháp</a></li>
+                <li><a href="#chuong-7-lich-su-phat-trien-va-han-che-cua-thiet-ke-ban-au-chot-co-vo-ieu-kien">7. Lịch sử phát triển & Hạn chế</a></li>
+                <li><a href="#chuong-8-kiem-chung-chuc-nang-thuc-nghiem">8. Kiểm chứng &amp; Thực nghiệm</a></li>
                 <li><a href="#ket-luan">Kết luận</a></li>
                 <li><a href="#appendix">Phụ lục: Mã nguồn</a></li>
             </ul>
@@ -502,7 +502,7 @@
 <hr />
 <h1 id="bao-cao-o-an-mon-hoc-thiet-ke-vi-mach-ien-tu">BÁO CÁO ĐỒ ÁN MÔN HỌC: THIẾT KẾ VI MẠCH ĐIỆN TỬ<a class="headerlink" href="#bao-cao-o-an-mon-hoc-thiet-ke-vi-mach-ien-tu" title="Permanent link">&para;</a></h1>
 <h2 id="e-tai-thiet-ke-va-kiem-thu-bo-vi-xu-ly-cpu-4-bit-on-chu-ky-tkvm">ĐỀ TÀI: THIẾT KẾ VÀ KIỂM THỬ BỘ VI XỬ LÝ CPU 4-BIT ĐƠN CHU KỲ (TKVM)<a class="headerlink" href="#e-tai-thiet-ke-va-kiem-thu-bo-vi-xu-ly-cpu-4-bit-on-chu-ky-tkvm" title="Permanent link">&para;</a></h2>
-<h3 id="kien-truc-harvard-rtl-simulation-physical-layout-gdsii">KIẾN TRÚC HARVARD — RTL SIMULATION &amp; PHYSICAL LAYOUT (GDSII)<a class="headerlink" href="#kien-truc-harvard-rtl-simulation-physical-layout-gdsii" title="Permanent link">&para;</a></h3>
+<h3 id="kien-truc-harvard-rtl-simulation-logic-synthesis">KIẾN TRÚC HARVARD — RTL SIMULATION &amp; LOGIC SYNTHESIS<a class="headerlink" href="#kien-truc-harvard-rtl-simulation-logic-synthesis" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Sinh viên thực hiện:</strong> Lê Ngọc Tường</li>
 <li><strong>Mã số sinh viên:</strong> 22120395</li>
@@ -532,7 +532,7 @@
 <li><strong>Hình 5:</strong> Dạng sóng chi tiết thực thi phép nhân 3 × 4 = 12 (waveform_cpu_top)</li>
 <li><strong>Hình 6:</strong> Sơ đồ netlist mức cổng (Gate-level Netlist) toàn CPU do Yosys tổng hợp</li>
 <li><strong>Hình 7:</strong> Sơ đồ netlist mức cổng chi tiết của khối tính toán ALU 4-bit</li>
-<li><strong>Hình 8:</strong> Layout vật lý GDSII của CPU hiển thị trên KLayout sau quy trình OpenLane</li>
+<li><strong>Hình 8:</strong> Sơ đồ layout tham khảo (Minh họa quy trình thiết kế vật lý)</li>
 <li><strong>Hình 9:</strong> Dạng sóng mô phỏng kiểm thử cờ có điều kiện (waveform_flag)</li>
 </ul>
 <hr />
@@ -979,7 +979,7 @@ end
 <hr />
 <p><a name="9-conclusion"></a></p>
 <h2 id="ket-luan">Kết luận<a class="headerlink" href="#ket-luan" title="Permanent link">&para;</a></h2>
-<p>Đồ án đã hiện thực hóa thành công bộ vi xử lý CPU 4-bit đơn chu kỳ từ cấp độ mô tả phần cứng RTL (Verilog), kiểm thử chức năng hoàn chỉnh trên 3 chương trình phần mềm, tổng hợp logic thành công cấp netlist mức cổng, và sinh layout vật lý GDSII đạt chuẩn để sẵn sàng sản xuất. Thiết kế đáp ứng đầy đủ các yêu cầu kỹ thuật và tính ổn định của một hệ thống xử lý số phân tầng học thuật.</p>
+<p>Đồ án đã hiện thực hóa thành công bộ vi xử lý CPU 4-bit đơn chu kỳ từ cấp độ mô tả phần cứng RTL (Verilog), kiểm thử chức năng hoàn chỉnh trên 3 chương trình phần mềm, tổng hợp logic thành công cấp netlist mức cổng, dừng ở mức tổng hợp logic (netlist Yosys); layout vật lý ngoài phạm vi đề tài. Thiết kế đáp ứng đầy đủ các yêu cầu kỹ thuật và tính ổn định của một hệ thống xử lý số phân tầng học thuật.</p>
                 
                 <hr style="margin:40px 0; border:none; border-top:1px solid var(--border)">
                 
@@ -1186,8 +1186,8 @@ endmodule
 
 module control_unit (
     input  logic [3:0]  opcode,
-    input  logic        zero,
-    input  logic        negative,
+    input  logic        flag_zero_in,
+    input  logic        flag_neg_in,
     input  logic        imm_mode,
     output logic        reg_write,
     output logic        mem_read,
@@ -1200,7 +1200,7 @@ module control_unit (
     output logic        flag_write
 );
 
-    always @(opcode, imm_mode) begin
+    always_comb begin
         // defaults
         reg_write  = 1'b0;
         mem_read   = 1'b0;
@@ -1323,8 +1323,8 @@ module control_unit (
     end
 
     assign pc_src = (opcode == 4'b1011) ? 1'b1 :
-                    (opcode == 4'b1100) ? zero :
-                    (opcode == 4'b1101) ? negative :
+                    (opcode == 4'b1100) ? flag_zero_in :
+                    (opcode == 4'b1101) ? flag_neg_in :
                     1'b0;
 
 endmodule
@@ -1415,8 +1415,8 @@ module cpu_top (
     control_unit ctrl (
         .opcode      (opcode),
         .imm_mode    (imm_mode),
-        .zero        (zero_r),
-        .negative    (negative_r),
+        .flag_zero_in(zero_r),
+        .flag_neg_in (negative_r),
         .reg_write   (reg_write),
         .mem_read    (mem_read),
         .mem_write   (mem_write),

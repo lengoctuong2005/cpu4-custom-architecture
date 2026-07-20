@@ -10,7 +10,7 @@
 
 # BÁO CÁO ĐỒ ÁN MÔN HỌC: THIẾT KẾ VI MẠCH ĐIỆN TỬ
 ## ĐỀ TÀI: THIẾT KẾ VÀ KIỂM THỬ BỘ VI XỬ LÝ CPU 4-BIT ĐƠN CHU KỲ (TKVM)
-### KIẾN TRÚC HARVARD — RTL SIMULATION & PHYSICAL LAYOUT (GDSII)
+### KIẾN TRÚC HARVARD — RTL SIMULATION & LOGIC SYNTHESIS
 
 * **Sinh viên thực hiện:** Lê Ngọc Tường
 * **Mã số sinh viên:** 22120395
@@ -42,7 +42,7 @@
 * **Hình 5:** Dạng sóng chi tiết thực thi phép nhân 3 × 4 = 12 (waveform_cpu_top)
 * **Hình 6:** Sơ đồ netlist mức cổng (Gate-level Netlist) toàn CPU do Yosys tổng hợp
 * **Hình 7:** Sơ đồ netlist mức cổng chi tiết của khối tính toán ALU 4-bit
-* **Hình 8:** Layout vật lý GDSII của CPU hiển thị trên KLayout sau quy trình OpenLane
+* **Hình 8:** Sơ đồ layout tham khảo (Minh họa quy trình thiết kế vật lý)
 * **Hình 9:** Dạng sóng mô phỏng kiểm thử cờ có điều kiện (waveform_flag)
 
 ---
@@ -556,4 +556,4 @@ Hình 9 chụp lại quá trình chạy kiểm thử tính năng chốt cờ có
 <a name="9-conclusion"></a>
 ## Kết luận
 
-Đồ án đã hiện thực hóa thành công bộ vi xử lý CPU 4-bit đơn chu kỳ từ cấp độ mô tả phần cứng RTL (Verilog), kiểm thử chức năng hoàn chỉnh trên 3 chương trình phần mềm, tổng hợp logic thành công cấp netlist mức cổng, và sinh layout vật lý GDSII đạt chuẩn để sẵn sàng sản xuất. Thiết kế đáp ứng đầy đủ các yêu cầu kỹ thuật và tính ổn định của một hệ thống xử lý số phân tầng học thuật.
+Đồ án đã hiện thực hóa thành công bộ vi xử lý CPU 4-bit đơn chu kỳ từ cấp độ mô tả phần cứng RTL (Verilog), kiểm thử chức năng hoàn chỉnh trên 3 chương trình phần mềm, tổng hợp logic thành công cấp netlist mức cổng, dừng ở mức tổng hợp logic (netlist Yosys); layout vật lý ngoài phạm vi đề tài. Thiết kế đáp ứng đầy đủ các yêu cầu kỹ thuật và tính ổn định của một hệ thống xử lý số phân tầng học thuật.
