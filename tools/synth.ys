@@ -1,0 +1,5 @@
+read_verilog -sv rtl/alu_4bit.v rtl/control_unit.v rtl/data_memory.v rtl/instruction_memory.v rtl/program_counter.v rtl/register_file.v rtl/cpu_top.v
+synth -top cpu_top
+stat
+write_verilog sim/gate_level_netlist.v
+show -format svg -prefix sim/gate_level_schematic cpu_top

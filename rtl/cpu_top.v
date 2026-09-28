@@ -29,11 +29,11 @@ module cpu_top (
     logic [3:0] read_data1, read_data2;
     logic [3:0] write_data;
     logic [1:0] write_reg;
+    wire  [3:0] r0_wire;   // R0 exported from register_file (fix Quartus cross-hier)
 
     // ALU
     logic [3:0] alu_result;
     // ALU flags (combinational, from ALU each cycle)
-    logic       zero, negative, carry;
     // ALU flags registered at the clock edge so branch/jump instructions
     // (JZ/JN) read the result of the *previous* executed instruction rather
     // than the (meaningless) ALU output of the branch cycle itself.
@@ -111,10 +111,10 @@ module cpu_top (
         .write_reg   (write_reg),
         .write_data  (write_data),
         .read_data1  (read_data1),
-        .read_data2  (read_data2)
+        .read_data2  (read_data2),
+        .r0_out      (r0_wire)
     );
 
-    // ALU input mux
     logic [3:0] alu_b;
     // alu_src=1: chon operand. Neu LDI (imm_mode) thi chon imm_val (imm 4-bit),
     //            nguoc lai chon operand (dia chi cho LOAD/STORE).
@@ -180,9 +180,8 @@ module cpu_top (
     assign halt_out  = halt;
 
     // Expose R0 for testbench inspection without hierarchical cross-module
-    // references (Icarus 12.0 blocks cpu.rf.r0 access from the TB).
-    // cpu_top instantiates rf directly, so rf.r0 is visible here.
-    assign debug_r0 = rf.r0;
+    // references (Quartus blocks rf.r0 access; use exported r0_out port).
+    assign debug_r0 = r0_wire;
 
     // ---- Testbench helper tasks (keep $readmemh / RAM writes inside cpu_top) ----
     /* synthesis translate_off */

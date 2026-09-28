@@ -1,0 +1,23 @@
+# fm_shell -f verify_rtl_gate.fms | tee fm.log
+set_app_var synopsys_auto_setup true
+
+# --- Reference = RTL ---
+read_verilog -container r -libname WORK -05 {
+    ../../rtl/alu_4bit.v
+    ../../rtl/register_file.v
+    ../../rtl/program_counter.v
+    ../../rtl/control_unit.v
+    ../../rtl/instruction_memory.v
+    ../../rtl/data_memory.v
+    ../../rtl/cpu_top.v
+}
+set_top r:/WORK/cpu4
+
+# --- Implementation = netlist gate ---
+read_db ../../Lib/db/saed32rvt_tt1p05v25c.db
+read_verilog -container i -libname WORK -netlist ../../syn/output/design_mapped.v
+set_top i:/WORK/cpu4
+
+match
+verify
+report_status

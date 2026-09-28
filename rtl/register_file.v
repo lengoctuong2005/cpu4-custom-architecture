@@ -9,7 +9,8 @@ module register_file (
     input  logic [1:0]  write_reg,
     input  logic [3:0]  write_data,
     output logic [3:0]  read_data1,
-    output logic [3:0]  read_data2
+    output logic [3:0]  read_data2,
+    output logic [3:0]  r0_out
 );
 
     logic [3:0] r0, r1, r2, r3;
@@ -48,5 +49,7 @@ module register_file (
             default: read_data2 = 4'b0;
         endcase
     end
+
+    assign r0_out = r0;
 
 endmodule

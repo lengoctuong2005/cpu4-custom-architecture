@@ -1,17 +1,54 @@
-# ── Simulation outputs (Icarus Verilog / GTKWave) ──────────────
+# ── Simulation dumps & outputs (Icarus Verilog / ModelSim / VCS / GTKWave) ──
 *.vcd
-*.out
 *.vvp
+*.out
+abc.history
+vsim.wlf
+transcript
+work/
 sim/_debug.txt
 
-# ── Node / npm (presentation generator only) ───────────────────
+# ── Quartus Prime temporary and database files ─────────────────
+real/db/
+real/incremental_db/
+real/output_files/
+*.qws
+*.qmsg
+*.rdb
+*.hdb
+*.cdb
+*.kpt
+*.bpm
+*.ddb
+*.logdb
+*.ammdb
+Tuan7.qpf
+DE10_STD_pin.xlsx
+real/c5_pin_model_dump.txt
+real/cpu_top_fpga_assignment_defaults.qdf
+
+# ── Sensitive release files, textbooks & personal drafts ──────
+rtl/release/
+Data/
+*.docx
+rtl/*.pdf
+~$*
+DoAn_CPU4*.md
+
+# ── Node / npm dependencies ───────────────────────────────────
 node_modules/
 
-# ── Python caches ──────────────────────────────────────────────
+# ── Python caches ─────────────────────────────────────────────
 __pycache__/
 *.pyc
 
-# ── AI tooling artifacts (do NOT commit) ───────────────────────
+# ── OS & Editor junk ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+~$*.docx
+*.tmp
+
+# ── AI tooling artifacts (do NOT commit) ──────────────────────
 .opencode/
 .agents/
 .manifest_cache.json

@@ -1,0 +1,4 @@
+read_verilog -sv rtl/alu_4bit.v rtl/control_unit.v rtl/data_memory_patched.v rtl/instruction_memory_patched.v rtl/program_counter.v rtl/register_file_patched.v
+read_verilog -sv rtl/cpu_top_patched.v
+synth -top cpu_top
+show -format svg -prefix sim/cpu_top_vcd_schematic
