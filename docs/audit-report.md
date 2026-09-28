@@ -1,6 +1,6 @@
 # Báo cáo Audit & Cleanup — CPU 4-bit (PR #1)
 
-> Tài liệu này giải thích các thay đổi trong [PR #1](https://github.com/lengoctuong2005/CPU-4Bit/pull/1).
+> Tài liệu này giải thích các thay đổi trong đợt kiểm tra và tối ưu hóa dự án.
 > Đối tượng đọc: từ người mới đến người đã quen dự án.
 
 ## Bối cảnh
@@ -97,7 +97,7 @@ Các thay đổi nhóm theo hai commit.
   `node_modules/`, cache hay output.
 
 **QA thủ công từng bước:**
-1. `git fetch && git switch claude/cpu-4bit-audit-01SwmMs8LVwnbbKsBy9ZJHzo`
+1. `git switch main`
 2. Cài Icarus Verilog (`sudo apt install iverilog` hoặc bản Windows).
 3. Chạy `make test` → phải thấy cả hai dòng "ALL ... PASSED".
 4. Thử phá để chắc chắn test *thực sự* bắt lỗi: sửa tạm một kỳ vọng trong
