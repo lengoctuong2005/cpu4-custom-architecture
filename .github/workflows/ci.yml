@@ -1,0 +1,29 @@
+name: CI Regression Testsuite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  simulation:
+    name: RTL & Behavioral Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install EDA Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog python3 build-essential
+
+      - name: Run ALU Directed Unit Tests
+        run: make alu
+
+      - name: Run End-to-End CPU Regression Suite
+        run: make test
+
+      - name: Run Cycle-Accurate Python Reference Model
+        run: make pysim

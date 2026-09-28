@@ -5,6 +5,7 @@
 [![PnR](https://img.shields.io/badge/P&R-Synopsys_IC_Compiler_II-orange.svg)](https://www.synopsys.com)
 [![Formal](https://img.shields.io/badge/Formal-Synopsys_Formality-purple.svg)](https://www.synopsys.com)
 [![FPGA](https://img.shields.io/badge/FPGA-Intel_Quartus_Prime-0071C5.svg)](https://www.intel.com)
+[![CI](https://github.com/lengoctuong2005/cpu4-custom-architecture/actions/workflows/ci.yml/badge.svg)](https://github.com/lengoctuong2005/cpu4-custom-architecture/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 CPU4 is a synthesizable 4-bit single-cycle Harvard microprocessor designed and implemented across the complete digital ASIC design cycle, from architectural specification and RTL coding to Synopsys 32nm physical implementation (GDSII) and FPGA validation on Intel hardware.
