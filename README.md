@@ -1,10 +1,10 @@
 # CPU4: Synthesizable 4-Bit Microprocessor & Complete Synopsys 32nm ASIC Implementation Flow
 
 [![HDL](https://img.shields.io/badge/HDL-Verilog--2001-blue.svg)](https://en.wikipedia.org/wiki/Verilog)
-[![Synthesis](https://img.shields.io/badge/Synthesis-Synopsys%20Design%20Compiler-red.svg)](https://www.synopsys.com)
-[![PnR](https://img.shields.io/badge/P%26R-Synopsys%20IC%20Compiler%20II-orange.svg)](https://www.synopsys.com)
-[![Formal](https://img.shields.io/badge/Formal-Synopsys%20Formality-purple.svg)](https://www.synopsys.com)
-[![FPGA](https://img.shields.io/badge/FPGA-Intel%20Quartus%20Prime-0071C5.svg)](https://www.intel.com)
+[![Synthesis](https://img.shields.io/badge/Synthesis-Synopsys_Design_Compiler-red.svg)](https://www.synopsys.com)
+[![PnR](https://img.shields.io/badge/P&R-Synopsys_IC_Compiler_II-orange.svg)](https://www.synopsys.com)
+[![Formal](https://img.shields.io/badge/Formal-Synopsys_Formality-purple.svg)](https://www.synopsys.com)
+[![FPGA](https://img.shields.io/badge/FPGA-Intel_Quartus_Prime-0071C5.svg)](https://www.intel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 CPU4 is a synthesizable 4-bit single-cycle Harvard microprocessor designed and implemented across the complete digital ASIC design cycle, from architectural specification and RTL coding to Synopsys 32nm physical implementation (GDSII) and FPGA validation on Intel hardware.
