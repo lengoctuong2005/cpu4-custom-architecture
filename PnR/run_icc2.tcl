@@ -12,15 +12,33 @@ set_app_var search_path "../Lib/ndm"
 lappend search_path "../Lib/tech/milkyway"
 lappend search_path "../syn/output"
 lappend search_path "../cons"
+if {[info exists env(SAED32_HOME)]} {
+    lappend search_path "$env(SAED32_HOME)/lib/ndm"
+    lappend search_path "$env(SAED32_HOME)/tech/milkyway"
+}
 set_app_var link_library "../Lib/db/saed32rvt_tt1p05v25c.db"
 set tech_file "saed32nm_1p9m_mw.tf"
 set ref_lib   "saed32_rvt.ndm"
 
-create_lib -technology $tech_file -ref_libs $ref_lib cpu4.dlib
+# Pre-check PDK technology assets
+set tech_found 0
+foreach sp $search_path {
+    if {[file exists [file join $sp $tech_file]]} {
+        set tech_found 1
+        break
+    }
+}
+if {!$tech_found} {
+    puts "\[ERROR\] Technology file '$tech_file' not found in search_path: $search_path"
+    puts "\[INFO\] Please set SAED32_HOME environment variable or place PDK files under ../Lib."
+    exit 1
+}
+
+create_lib -technology $tech_file -ref_libs $ref_lib cpu_top.dlib
 
 # --- Import design ---
-read_verilog -top cpu4 design_mapped.v
-read_sdc ../syn/output/cpu4.sdc
+read_verilog -top cpu_top design_mapped.v
+read_sdc ../syn/output/cpu_top.sdc
 
 # --- RC / layer ---
 read_parasitic_tech -layermap ../Lib/tech/milkyway/saed32nm_tf_itf_tluplus.map \
@@ -68,12 +86,12 @@ check_lvs -nets [get_nets] -checks {short open} -check_child_cells true
 # --- Luu & xuat ---
 save_block
 save_lib -all
-set design "cpu4"
+set design "cpu_top"
 write_gds -long_names -design $design -hierarchy design_lib \
     -layer_map ../Lib/tech/milkyway/saed32nm_1p9m_gdsout_mw.map \
     -lib_cell_view frame -keep_data_type -fill exclude output/${design}.gds
-write_parasitics -output ./output/cpu4.spef -no_name_mapping -compress -hierarchical -format spef
-write_verilog output/cpu4_icc2.v -exclude {all_physical_cells pg_objects filler_cells \
+write_parasitics -output ./output/cpu_top.spef -no_name_mapping -compress -hierarchical -format spef
+write_verilog output/cpu_top_icc2.v -exclude {all_physical_cells pg_objects filler_cells \
     well_tap_cells end_cap_cells physical_only_cells}
 
 exit

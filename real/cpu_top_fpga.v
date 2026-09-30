@@ -69,9 +69,19 @@ module cpu_top_fpga (
     logic step_clk_pressed;
     assign step_clk_pressed = (button_shift[2:1] == 2'b10);
 
-    // 3. Mux chon xung clock cho CPU
+    // 3. Xung clock cho CPU: tao bang thanh ghi dong bo tren fpga_clk (50MHz)
+    logic cpu_clk_reg;
+    always_ff @(posedge fpga_clk or negedge fpga_rst_n) begin
+        if (!fpga_rst_n) begin
+            cpu_clk_reg <= 1'b0;
+        end else if (fpga_mode_select) begin
+            cpu_clk_reg <= clk_1hz;
+        end else if (step_clk_pressed) begin
+            cpu_clk_reg <= ~cpu_clk_reg;
+        end
+    end
     logic cpu_clk;
-    assign cpu_clk = fpga_mode_select ? clk_1hz : step_clk_pressed;
+    assign cpu_clk = cpu_clk_reg;
 
     // Duong truyen tin hieu tu CPU
     logic [3:0] cpu_out_port;

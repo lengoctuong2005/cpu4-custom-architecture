@@ -85,16 +85,70 @@ module tb_alu_4bit;
         check_alu("DEC",          4'd1,  4'd0,  3'b110,  4'd0,   1,0,1); // 1-1=0, no borrow
         check_alu("PASSTHRU",     4'd0,  4'd9,  3'b111,  4'd9,   0,1,0); // MOV: result=b
 
+        // 2) Exhaustive check: 8 ops x 16 a x 16 b = 2,048 cases
+        for (int i_op = 0; i_op < 8; i_op++) begin
+            for (int i_a = 0; i_a < 16; i_a++) begin
+                for (int i_b = 0; i_b < 16; i_b++) begin
+                    logic [3:0] exp_r;
+                    logic       exp_z, exp_n, exp_c;
+                    case (i_op[2:0])
+                        3'b000: begin // ADD
+                            {exp_c, exp_r} = i_a[3:0] + i_b[3:0];
+                        end
+                        3'b001: begin // SUB
+                            {exp_c, exp_r} = {1'b0, i_a[3:0]} + {1'b0, ~i_b[3:0]} + 5'b00001;
+                        end
+                        3'b010: begin // AND
+                            exp_r = i_a[3:0] & i_b[3:0];
+                            exp_c = 1'b0;
+                        end
+                        3'b011: begin // OR
+                            exp_r = i_a[3:0] | i_b[3:0];
+                            exp_c = 1'b0;
+                        end
+                        3'b100: begin // XOR
+                            exp_r = i_a[3:0] ^ i_b[3:0];
+                            exp_c = 1'b0;
+                        end
+                        3'b101: begin // INC
+                            {exp_c, exp_r} = i_a[3:0] + 1'b1;
+                        end
+                        3'b110: begin // DEC
+                            {exp_c, exp_r} = {1'b0, i_a[3:0]} + {1'b0, ~4'b0001} + 5'b00001;
+                        end
+                        3'b111: begin // PASSTHRU
+                            exp_r = i_b[3:0];
+                            exp_c = 1'b0;
+                        end
+                    endcase
+                    exp_z = (exp_r == 4'b0);
+                    exp_n = exp_r[3];
+
+                    a = i_a[3:0];
+                    b = i_b[3:0];
+                    op = i_op[2:0];
+                    #1;
+                    checks = checks + 1;
+                    if (result !== exp_r || zero !== exp_z || negative !== exp_n || carry !== exp_c) begin
+                        errors = errors + 1;
+                        $display("[FAIL] op=%03b a=%0d b=%0d -> got res=%0d Z=%b N=%b C=%b, want res=%0d Z=%b N=%b C=%b",
+                                 i_op[2:0], i_a, i_b, result, zero, negative, carry, exp_r, exp_z, exp_n, exp_c);
+                    end
+                end
+            end
+        end
+
         $display("========================================");
         $display("ALU RESULT: %0d/%0d checks passed, %0d failed",
                  checks - errors, checks, errors);
         $display("========================================");
-        if (errors == 0)
-            $display("ALL ALU TESTS PASSED");
-        else
+        if (errors == 0) begin
+            $display("ALL ALU TESTS PASSED (including 2048 exhaustive checks)");
+            $finish;
+        end else begin
             $display("SOME ALU TESTS FAILED");
-
-        $finish;
+            $fatal(1, "ALU verification failed!");
+        end
     end
 
 endmodule

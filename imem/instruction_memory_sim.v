@@ -1,4 +1,4 @@
-# imem/instruction_memory_sim.v — TKVM mo phong ($readmemh)
+// imem/instruction_memory_sim.v — TKVM mo phong ($readmemh)
 module instruction_memory #(
     parameter PROG = "programs/fib.hex"
 )(

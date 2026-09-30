@@ -153,12 +153,13 @@ module tb_cpu_top;
         $display("========================================");
         $display("RESULT: %0d PASS, %0d FAIL", pass_count, fail_count);
         $display("========================================");
-        if (fail_count == 0)
+        if (fail_count == 0) begin
             $display("ALL TESTS PASSED");
-        else
+            $finish;
+        end else begin
             $display("SOME TESTS FAILED");
-
-        $finish;
+            $fatal(1, "CPU regression failed!");
+        end
     end
 
 endmodule

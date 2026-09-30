@@ -132,7 +132,7 @@ Cộng hai số đặt tại `Mem[10]` và `Mem[11]`, lưu tổng vào `Mem[12]`
 0x07: HALT
 ```
 
-Kết quả đúng: `Mem[12] = 12 = 0xC`, cờ Z = 0, N = 0 (12 < 16).
+Kết quả đúng: `Mem[12] = 12 = 0xC`, cờ Z = 0, N = 1 (bit 3 = 1).
 
 ---
 

@@ -112,37 +112,39 @@ The processor instruction word is formatted as:
 
 Operand field decoding:
 - **Register-Register Operations**: `operand = {Rd[1:0], Rs[1:0]}` (bits `[3:2]` select destination register, bits `[1:0]` select source register).
-- **Immediate Operations (`MVI` / `LDI`)**: `imm_mode = 1`, `operand = imm[3:0]` (loads 4-bit immediate into accumulator `R0`).
+- **Immediate Operations (`LDI`)**: `imm_mode = 1`, `operand = imm[3:0]` (loads 4-bit immediate into accumulator `R0`).
 - **Memory Addressing (`LOAD` / `STORE`)**: `operand = addr[3:0]` (4-bit RAM address).
-- **Branch Operations (`JMP` / `JZ` / `JC` / `JN`)**: `operand = target[3:0]` (4-bit ROM address).
+- **Branch Operations (`JMP` / `JZ` / `JN`)**: `operand = target[3:0]` (4-bit ROM address).
 - **Single-Register Operations (`INC` / `DEC` / `OUT`)**: bits `[3:2]` or `[1:0]` select target register.
 
 ### Core Instruction Set Table
 
-| Opcode | Mnemonic | Instruction Format | RTL Micro-operations | Affected Flags | Functional Description |
+| Opcode | Mnemonic | Instruction Format | RTL Micro-operations | Architectural Flags | Functional Description |
 | :---: | :--- | :--- | :--- | :---: | :--- |
 | `0000` | `NOP` | `NOP` | None | None | No operation; advances PC. |
 | `0001` | `LOAD` | `LOAD addr` | `R0 <= DMEM[addr]` | None | Load 4-bit data from RAM address into accumulator R0. |
 | `0010` | `STORE` | `STORE addr` | `DMEM[addr] <= R0` | None | Store accumulator R0 data into RAM address. |
 | `0011` | `MOV` | `MOV Rd, Rs` | `R[Rd] <= R[Rs]` | None | Copy content of source register Rs to destination Rd. |
-| `0011` | `MVI` | `MVI #imm4` (`LDI`) | `R0 <= imm4` | Z, N | Load 4-bit immediate constant into R0 (`imm_mode=1`). |
-| `0100` | `ADD` | `ADD Rd, Rs` | `R[Rd] <= R[Rd] + R[Rs]` | Z, N, C | Add Rs to Rd; updates Zero, Negative, Carry. |
-| `0101` | `SUB` | `SUB Rd, Rs` | `R[Rd] <= R[Rd] - R[Rs]` | Z, N, C | Subtract Rs from Rd; updates Zero, Negative, Carry. |
+| `0011` | `LDI` | `LDI #imm4` | `R0 <= imm4` | Z, N | Load 4-bit immediate constant into R0 (`imm_mode=1`). |
+| `0100` | `ADD` | `ADD Rd, Rs` | `R[Rd] <= R[Rd] + R[Rs]` | Z, N | Add Rs to Rd; updates Zero and Negative architectural flags. |
+| `0101` | `SUB` | `SUB Rd, Rs` | `R[Rd] <= R[Rd] - R[Rs]` | Z, N | Subtract Rs from Rd; updates Zero and Negative architectural flags. |
 | `0110` | `AND` | `AND Rd, Rs` | `R[Rd] <= R[Rd] & R[Rs]` | Z, N | Bitwise logical AND between Rd and Rs. |
 | `0111` | `OR` | `OR Rd, Rs` | `R[Rd] <= R[Rd] \| R[Rs]`| Z, N | Bitwise logical OR between Rd and Rs. |
 | `1000` | `XOR` | `XOR Rd, Rs` | `R[Rd] <= R[Rd] ^ R[Rs]` | Z, N | Bitwise logical XOR between Rd and Rs. |
-| `1001` | `INC` | `INC Rd` | `R[Rd] <= R[Rd] + 1` | Z, N, C | Increment destination register Rd by 1. |
-| `1010` | `DEC` | `DEC Rd` | `R[Rd] <= R[Rd] - 1` | Z, N, C | Decrement destination register Rd by 1. |
+| `1001` | `INC` | `INC Rd` | `R[Rd] <= R[Rd] + 1` | Z, N | Increment destination register Rd by 1. |
+| `1010` | `DEC` | `DEC Rd` | `R[Rd] <= R[Rd] - 1` | Z, N | Decrement destination register Rd by 1. |
 | `1011` | `JMP` | `JMP addr` | `PC <= addr` | None | Unconditional jump to target ROM address. |
 | `1100` | `JZ` | `JZ addr` | `PC <= (Z ? addr : PC+1)`| None | Conditional jump to target address if Zero flag is 1. |
-| `1101` | `JN` / `JC` | `JN addr` | `PC <= (N ? addr : PC+1)`| None | Conditional jump if Negative (or Carry) condition is met. |
+| `1101` | `JN` | `JN addr` | `PC <= (N ? addr : PC+1)`| None | Conditional jump to target address if Negative flag is 1. |
 | `1110` | `OUT` | `OUT Rs` | `out_port <= R[Rs]` | None | Drive register data to CPU external output port. |
 | `1111` | `HALT` | `HALT` | `halt <= 1; PC <= PC` | None | Freeze Program Counter and halt pipeline execution. |
 
-*Extended microcode aliases supported via software toolchain:*
-- `NOT Rd`: Implemented via `XOR Rd, R_all_ones` or `SUB R0, Rd`.
-- `SHL Rd`: Implemented via `ADD Rd, Rd` (arithmetic/logical shift left by 1).
-- `SHR Rd`: Implemented via software rotation and masking sequence.
+*Note on Status Flags:*
+- In ISA v1, architectural status flags are `Z` (Zero) and `N` (Negative). ALU internally computes a 4th Carry/Borrow bit `C` for arithmetic datapath verification, which is observable in testbenches and reference simulations.
+
+*Synthetic Macro Idioms:*
+- `NOT Rd`: Constructed in assembly via `XOR Rd, R_mask` (with `R_mask=0xF`) or `SUB R_zero, Rd`.
+- `SHL Rd`: Constructed in assembly via `ADD Rd, Rd` (logical shift left by 1).
 
 ---
 
@@ -219,11 +221,13 @@ The design includes automation scripts targeting the Synopsys SAED 32nm standard
                                          v
                              +-----------------------+
                              | Final Tape-Out GDSII  |
-                             | (`output/cpu4.gds`)   |
+                             | (`output/cpu_top.gds`)|
                              +-----------------------+
 ```
 
-### 1. SDC Timing Constraints (`cons/cpu4.sdc`)
+> **Toolchain Notice:** Synthesis, formal verification, and place-and-route scripts target Synopsys Design Compiler, Formality, and IC Compiler II with the SAED32nm RVT standard-cell library. Running these flows requires local Synopsys toolchain licenses and the SAED32nm PDK (`SAED32_HOME`).
+
+### 1. SDC Timing Constraints (`cons/cpu_top.sdc`)
 - **Clock Definition**: 100 MHz operating target (`period 10.0ns`) on port `clk`.
 - **Clock Quality**: 0.2 ns clock uncertainty, 0.1 ns clock transition.
 - **Port Budgeting**: 2.0 ns input delay, 2.0 ns output delay relative to clock edge.
@@ -233,13 +237,14 @@ The design includes automation scripts targeting the Synopsys SAED 32nm standard
 ### 2. Logic Synthesis (`syn/run_dc.tcl`)
 - Tool: Synopsys Design Compiler (`dc_shell`).
 - Target Library: `saed32rvt_tt1p05v25c.db` (Nominal 1.05V, 25 deg C).
+- Target Top Entity: `cpu_top`.
 - Optimization: `compile_ultra` with boundary optimization and auto-uniquification.
 - Artifacts: Gate-level netlist (`output/design_mapped.v`), synthesized SDC constraints, and timing/area/power reports.
 
 ### 3. Formal Verification (`Formal/`)
 Two verification suites eliminate functional discrepancies introduced during translation:
-- **RTL vs. Synthesis Gate Netlist** ([`Formal/RTL_vs_Gate/verify_rtl_gate.fms`](Formal/RTL_vs_Gate/verify_rtl_gate.fms)): Verifies that logic synthesis preserves the original RTL behavior.
-- **Synthesis Netlist vs. Post-PnR Netlist** ([`Formal/Post_PnR/verify_post_pnr.fms`](Formal/Post_PnR/verify_post_pnr.fms)): Verifies that clock tree insertion, physical cell legalization, and optimization steps do not alter functionality.
+- **RTL vs. Synthesis Gate Netlist** ([`Formal/RTL_vs_Gate/verify_rtl_gate.fms`](Formal/RTL_vs_Gate/verify_rtl_gate.fms)): Verifies that logic synthesis preserves the original RTL behavior (Top: `cpu_top`).
+- **Synthesis Netlist vs. Post-PnR Netlist** ([`Formal/Post_PnR/verify_post_pnr.fms`](Formal/Post_PnR/verify_post_pnr.fms)): Verifies that clock tree insertion, physical cell legalization, and optimization steps do not alter functionality (Top: `cpu_top`).
 
 ### 4. Physical Design and Place & Route (`PnR/run_icc2.tcl`)
 - Tool: Synopsys IC Compiler II (`icc2_shell`).
@@ -247,16 +252,17 @@ Two verification suites eliminate functional discrepancies introduced during tra
 - Power Grid Network ([`PnR/scripts/power.tcl`](PnR/scripts/power.tcl)): Power and ground rings on top metal layers (M8/M9) with regular vertical and horizontal straps to minimize IR drop.
 - Placement & Legalization: `place_opt` for timing-driven placement, congestion mitigation, and high-fanout net synthesis.
 - Clock Tree Synthesis (CTS): Target skew <= 50 ps with Non-Default Routing ([`PnR/scripts/ndr.tcl`](PnR/scripts/ndr.tcl)) shielding for clock nets.
-- Detailed Routing & Sign-off: Antenna prevention routing, automatic filler cell insertion (`SHFILL*`), layout versus schematic (LVS) verification, parasitic extraction (`cpu4.spef`), and GDSII export (`cpu4.gds`).
+- Detailed Routing & Sign-off: Antenna prevention routing, automatic filler cell insertion (`SHFILL*`), layout versus schematic (LVS) verification, parasitic extraction (`cpu_top.spef`), and GDSII export (`cpu_top.gds`).
 
 ---
 
 ## 7. FPGA Prototyping & Board Deployment
 
-Hardware validation is provided for Intel FPGA development boards (Terasic DE10-Lite / Cyclone V hardware platforms):
+Hardware validation is targeted for Intel Cyclone V SoC development boards (Terasic DE10-Standard / DE1-SoC):
 
-- **Target FPGA**: Intel MAX 10 (10M50DAF484C7G) / Cyclone V SE (5CSXFC6D6F31C6).
-- **Top-Level Wrappers**: [`real/cpu_top_fpga.v`](real/cpu_top_fpga.v) and [`real/cpu4_de10.v`](real/cpu4_de10.v).
+- **Target FPGA**: Intel Cyclone V SE (5CSXFC6D6F31C6).
+- **Top-Level Wrapper**: [`real/cpu_top_fpga.v`](real/cpu_top_fpga.v) (Top Entity: `cpu_top_fpga`, instantiating canonical `cpu_top`).
+- **Alternative DE10 Interface**: [`real/cpu4_de10.v`](real/cpu4_de10.v) (mapped to `cpu_top`).
 - **Clock Management**:
   - 50 MHz onboard oscillator input (`CLOCK_50`).
   - Frequency divider generating 1 Hz clock for visible step-by-step program inspection.
@@ -342,7 +348,8 @@ ALL TESTS PASSED
 ```text
 .
 ├── cons/
-│   └── cpu4.sdc                    # Synopsys SDC timing constraints (100 MHz, I/O delays)
+│   ├── cpu_top.sdc                 # Synopsys SDC timing constraints (100 MHz, I/O delays)
+│   └── cpu4.sdc                    # Legacy alias for backward compatibility
 ├── docs/
 │   ├── isa.md                      # Complete ISA specification and control matrix
 │   ├── setup.md                    # Toolchain setup and environment manual

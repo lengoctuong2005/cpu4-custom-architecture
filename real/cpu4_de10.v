@@ -31,9 +31,15 @@ module cpu4_de10 (
     wire cpu_clk = mode_sw ? clk_slow : key1_clean;
     // Che do buoc tay: moi lan NHAN-THA KEY[1] = 1 nhip lenh.
 
-    // 4) Loi CPU dung chung (khong sua)
+    // 4) Loi CPU dung chung (cpu_top)
     wire [3:0] out_port; wire halt;
-    cpu4 u_cpu (.clk(cpu_clk), .rst_n(rst_n), .out_port(out_port), .halt(halt));
+    cpu_top u_cpu (
+        .clk      (cpu_clk),
+        .rst_n    (rst_n),
+        .out_port (out_port),
+        .halt_out (halt),
+        .debug_r0 ()
+    );
 
     // 5) Hien thi
     assign LEDR[3:0] = out_port;   // ket qua 4-bit

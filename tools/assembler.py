@@ -155,11 +155,11 @@ def assemble(text):
         # nhan
         if line.endswith(":") and " " not in line and not line.startswith("."):
             name = line[:-1].strip()
+            if name in labels:
+                raise ValueError(f"Dong {i+1}: nhan trung lap '{name}'")
             labels[name] = pc
             continue
         pc += 1
-        if pc >= 16:
-            break
 
     # Pass 2: sinh code
     program = []
@@ -178,9 +178,10 @@ def assemble(text):
             raise ValueError(f"Dong {line_no}: loi assemble")
         program.append(word)
         pc += 1
-        if pc >= 16:
-            print(f"[WARN] Vuot qua 16 lenh, cat bo phan con lai.")
-            break
+
+    if len(program) > 16:
+        raise ValueError(f"Chuong trinh co {len(program)} lenh, vuot qua dung luong ROM 16 tu (0..15).")
+
     return program
 
 

@@ -19,10 +19,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y iverilog python3 build-essential
 
-      - name: Run ALU Directed Unit Tests
-        run: make alu
+      - name: Assemble Programs from Source
+        run: make asm
 
-      - name: Run End-to-End CPU Regression Suite
+      - name: Run Module Unit Tests
+        run: make unit
+
+      - name: Run End-to-End CPU & Exhaustive ALU Regression
         run: make test
 
       - name: Run Cycle-Accurate Python Reference Model

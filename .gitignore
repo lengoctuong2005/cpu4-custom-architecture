@@ -1,17 +1,39 @@
-# ── Simulation dumps & outputs (Icarus Verilog / ModelSim / VCS / GTKWave) ──
+# ============================================================================
+# .gitignore — CPU4 Custom Architecture & ASIC Verification
+# ============================================================================
+
+# ── Verilog & Simulation Build Artifacts ────────────────────────────────────
+sim/cpu_sim
+sim/alu_sim
 *.vcd
+*.dot
 *.vvp
 *.out
-abc.history
-vsim.wlf
-transcript
+*.wlf
 work/
+transcript
+*.log
+*.syn
+*.sim
 sim/_debug.txt
+abc.history
 
-# ── Quartus Prime temporary and database files ─────────────────
+# ── EDA & Synthesis Outputs (Quartus, Synopsys, Yosys) ──────────────────────
+*.svf
+*.mr
+alib-*
+command.log
+filenames*.log
+default.svf
+icc2_output.txt
+db/
+incremental_db/
+output_files/
 real/db/
 real/incremental_db/
 real/output_files/
+*.rpt
+*.done
 *.qws
 *.qmsg
 *.rdb
@@ -27,7 +49,7 @@ DE10_STD_pin.xlsx
 real/c5_pin_model_dump.txt
 real/cpu_top_fpga_assignment_defaults.qdf
 
-# ── Sensitive release files, textbooks & personal drafts ──────
+# ── Sensitive Release Files, Textbooks & Personal Drafts ────────────────────
 rtl/release/
 Data/
 *.docx
@@ -35,20 +57,24 @@ rtl/*.pdf
 ~$*
 DoAn_CPU4*.md
 
-# ── Node / npm dependencies ───────────────────────────────────
+# ── Node / NPM Dependencies ─────────────────────────────────────────────────
 node_modules/
+package-lock.json
 
-# ── Python caches ─────────────────────────────────────────────
+# ── Python Environment & Bytecode Caches ────────────────────────────────────
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
 
-# ── OS & Editor junk ──────────────────────────────────────────
+# ── OS & Editor Artifacts ───────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-~$*.docx
+*.swp
+*~
 *.tmp
 
-# ── AI tooling artifacts (do NOT commit) ──────────────────────
+# ── AI Tooling Artifacts ────────────────────────────────────────────────────
 .opencode/
 .agents/
 .manifest_cache.json

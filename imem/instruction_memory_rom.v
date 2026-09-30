@@ -1,4 +1,4 @@
-# imem/instruction_memory_rom.v — THTKVM tong hop (bang case, khong $readmemh)
+// imem/instruction_memory_rom.v — THTKVM tong hop (bang case, khong $readmemh)
 module instruction_memory (
     input  wire [3:0] addr,
     output reg  [8:0] instr

@@ -186,8 +186,33 @@ module cpu_top (
     // ---- Testbench helper tasks (keep $readmemh / RAM writes inside cpu_top) ----
     /* synthesis translate_off */
     // Load a hex program into the instruction ROM.
+    // Automatically resolves path whether simulation runs from project root or from sim/ directory.
     task load_program(input string hex_path);
-        $readmemh(hex_path, imem.rom);
+        integer f;
+        string actual_path;
+        begin
+            actual_path = hex_path;
+            f = $fopen(hex_path, "r");
+            if (f != 0) begin
+                $fclose(f);
+                actual_path = hex_path;
+            end else begin
+                f = $fopen({"sim/", hex_path}, "r");
+                if (f != 0) begin
+                    $fclose(f);
+                    actual_path = {"sim/", hex_path};
+                end else if (hex_path.len() >= 4 && hex_path.substr(0, 3) == "sim/") begin
+                    string stripped;
+                    stripped = hex_path.substr(4, hex_path.len() - 1);
+                    f = $fopen(stripped, "r");
+                    if (f != 0) begin
+                        $fclose(f);
+                        actual_path = stripped;
+                    end
+                end
+            end
+            $readmemh(actual_path, imem.rom);
+        end
     endtask
 
     // Preload data RAM locations 10 and 11 (operands for ADD/MUL demos).

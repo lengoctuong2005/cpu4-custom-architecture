@@ -1,17 +1,22 @@
 {
-  "name": "tkvm",
+  "name": "cpu4-custom-architecture",
   "version": "1.0.0",
-  "description": "",
+  "description": "4-bit Harvard Architecture Single-Cycle CPU in SystemVerilog-2012",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "cpu",
+    "systemverilog",
+    "asic",
+    "fpga"
+  ],
+  "author": "Le Ngoc Tuong",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "pptxgenjs": "^4.0.1"

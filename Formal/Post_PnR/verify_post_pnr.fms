@@ -3,11 +3,11 @@ read_db ../../Lib/db/saed32rvt_tt1p05v25c.db
 
 # Reference = netlist sau DC
 read_verilog -container r -libname WORK -netlist ../../syn/output/design_mapped.v
-set_top r:/WORK/cpu4
+set_top r:/WORK/cpu_top
 
 # Implementation = netlist sau PnR
-read_verilog -container i -libname WORK -netlist ../../PnR/output/cpu4_icc2.v
-set_top i:/WORK/cpu4
+read_verilog -container i -libname WORK -netlist ../../PnR/output/cpu_top_icc2.v
+set_top i:/WORK/cpu_top
 
 match
 verify

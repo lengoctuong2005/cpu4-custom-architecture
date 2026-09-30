@@ -2,7 +2,7 @@
 set_app_var synopsys_auto_setup true
 
 # --- Reference = RTL ---
-read_verilog -container r -libname WORK -05 {
+read_sverilog -container r -libname WORK {
     ../../rtl/alu_4bit.v
     ../../rtl/register_file.v
     ../../rtl/program_counter.v
@@ -11,12 +11,12 @@ read_verilog -container r -libname WORK -05 {
     ../../rtl/data_memory.v
     ../../rtl/cpu_top.v
 }
-set_top r:/WORK/cpu4
+set_top r:/WORK/cpu_top
 
 # --- Implementation = netlist gate ---
 read_db ../../Lib/db/saed32rvt_tt1p05v25c.db
 read_verilog -container i -libname WORK -netlist ../../syn/output/design_mapped.v
-set_top i:/WORK/cpu4
+set_top i:/WORK/cpu_top
 
 match
 verify
