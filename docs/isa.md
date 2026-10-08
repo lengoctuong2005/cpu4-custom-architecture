@@ -22,6 +22,15 @@
 | Chu kỳ | Single-cycle (1 lệnh = 1 cạnh xung CLK) |
 | Tín hiệu dừng | HALT (đóng băng PC) |
 
+### Giao diện và reset
+
+- SystemVerilog-2012, top `cpu_top`; `clk_en=1` để chạy mỗi cạnh clock.
+- `clk_en=0` giữ PC/RF/Z/N/OUT/RAM; không gate clock vật lý.
+- Reset PC/RF/Z/N/OUT về 0; reset CPU **không xóa RAM**.
+- ROM mặc định là Fibonacci; task load_program chỉ dùng trong mô phỏng.
+- ALU carry là output tổ hợp nội bộ; CPU/emulator không lưu C/V.
+- JN chỉ kiểm tra N; không phải signed less-than tổng quát khi SUB tràn.
+
 ### Mô hình lập trình
 - **R0 đóng vai trò accumulator** cho các lệnh truy cập bộ nhớ (LOAD/STORE).
 - **R1–R3 là thanh ghi đa dụng** dùng cho các phép toán thanh ghi – thanh ghi.
@@ -85,7 +94,7 @@
 > LDI dùng chung opcode `0011` với MOV, phân biệt bằng `imm_mode` (bit 8). LDI luôn
 > nạp vào R0; muốn đưa hằng số vào R1/R2/R3, dùng `LDI #imm` rồi `MOV Rx, R0`.
 
-> **Ràng buộc kiến trúc (flag pipeline):** Cờ Z/N được chốt có điều kiện qua `flag_write`; chỉ lệnh sinh cờ (ADD/SUB/AND/OR/XOR/INC/DEC/LDI) mới ghi đè. Có thể chèn lệnh không sinh cờ (MOV/LOAD/STORE/NOP/OUT) giữa lệnh set-flag và JZ/JN.
+> **Ràng buộc kiến trúc (ghi thanh ghi cờ có điều kiện):** Cờ Z/N được chốt có điều kiện qua `flag_write`; chỉ lệnh sinh cờ (ADD/SUB/AND/OR/XOR/INC/DEC/LDI) mới ghi đè. Có thể chèn lệnh không sinh cờ (MOV/LOAD/STORE/NOP/OUT) giữa lệnh set-flag và JZ/JN.
 
 ---
 
@@ -98,10 +107,10 @@ Bảng chân trị tóm tắt (cho `cpu_top`):
 | NOP | 0 | 0 | 0 | X | X | ADD | PC+1 | X |
 | LOAD | 1 | 1 | 0 | MEM | X | ADD | PC+1 | R0 |
 | STORE | 0 | 0 | 1 | X | X | ADD | PC+1 | R0 |
-| MOV | 1 | 0 | 0 | ALU | REG | ADD(passthru) | PC+1 | Rd |
-| LDI | 1 | 0 | 0 | ALU | IMM | ADD(passthru) | PC+1 | R0 |
+| MOV | 1 | 0 | 0 | ALU | REG | PASS (111) | PC+1 | Rd |
+| LDI | 1 | 0 | 0 | ALU | IMM | PASS (111) | PC+1 | R0 |
 | ADD/SUB/AND/OR/XOR | 1 | 0 | 0 | ALU | REG | theo opcode | PC+1 | Rd |
-| INC/DEC | 1 | 0 | 0 | ALU | REG | ADD/SUB(+1/-1) | PC+1 | Rd |
+| INC/DEC | 1 | 0 | 0 | ALU | REG | INC(101)/DEC(110) | PC+1 | Rd |
 | JMP | 0 | 0 | 0 | X | X | ADD | addr | X |
 | JZ | 0 | 0 | 0 | X | X | ADD | addr nếu Z | X |
 | JN | 0 | 0 | 0 | X | X | ADD | addr nếu N | X |
@@ -122,14 +131,14 @@ Cộng hai số đặt tại `Mem[10]` và `Mem[11]`, lưu tổng vào `Mem[12]`
 
 ```asm
 ; Mem[10] = 5, Mem[11] = 7  (khởi tạo bởi file .mem)
-0x00: LOAD  10      ; R0 = Mem[10]  = 5
-0x01: MOV   R1, R0  ; R1 = R0      = 5
-0x02: LOAD  11      ; R0 = Mem[11]  = 7
-0x03: ADD   R1, R0  ; R1 = R1 + R0 = 12
-0x04: MOV   R0, R1  ; R0 = R1      = 12
-0x05: STORE 12      ; Mem[12] = R0 = 12
-0x06: OUT   R0      ; OUT = 12
-0x07: HALT
+LOAD  10      ; R0 = Mem[10]  = 5
+MOV   R1, R0  ; R1 = R0      = 5
+LOAD  11      ; R0 = Mem[11]  = 7
+ADD   R1, R0  ; R1 = R1 + R0 = 12
+MOV   R0, R1  ; R0 = R1      = 12
+STORE 12      ; Mem[12] = R0 = 12
+OUT   R0      ; OUT = 12
+HALT
 ```
 
 Kết quả đúng: `Mem[12] = 12 = 0xC`, cờ Z = 0, N = 1 (bit 3 = 1).
@@ -149,3 +158,9 @@ Kết quả đúng: `Mem[12] = 12 = 0xC`, cờ Z = 0, N = 1 (bit 3 = 1).
 - `tools/sim_cpu.py` — mô phỏng hành vi tham chiếu (Python).
 - `sim/*.hex` — chương trình mã máy + dữ liệu khởi tạo.
 - `tb/tb_*.v` — testbench từng module và toàn bộ CPU.
+
+## Verification revision 2026-10-08
+
+See `verification_2026-10-08.md` for executed tests and limits. The maintained
+Python encoding/ALU specification is `tools/isa.py`. Opcode/operand aliases that
+RTL ignores are exercised by differential tests; assembler emits canonical forms.

@@ -3,6 +3,7 @@
 module cpu_top (
     input  logic        clk,
     input  logic        rst_n,
+    input  logic        clk_en, // synchronous instruction enable; tie high for core simulation
     output logic [3:0]  out_port,
     output logic        halt_out,
     output logic [3:0]  debug_r0
@@ -33,6 +34,7 @@ module cpu_top (
 
     // ALU
     logic [3:0] alu_result;
+    logic       zero, negative, carry; // explicit combinational ALU outputs
     // ALU flags (combinational, from ALU each cycle)
     // ALU flags registered at the clock edge so branch/jump instructions
     // (JZ/JN) read the result of the *previous* executed instruction rather
@@ -105,7 +107,7 @@ module cpu_top (
     register_file rf (
         .clk         (clk),
         .rst_n       (rst_n),
-        .reg_write   (reg_write),
+        .reg_write   (reg_write & clk_en),
         .read_reg1   (read_reg1_mux),
         .read_reg2   (operand[1:0]),
         .write_reg   (write_reg),
@@ -140,7 +142,7 @@ module cpu_top (
         if (!rst_n) begin
             zero_r    <= 1'b0;
             negative_r <= 1'b0;
-        end else if (flag_write) begin
+        end else if (clk_en && flag_write) begin
             zero_r    <= zero;
             negative_r <= negative;
         end
@@ -150,7 +152,7 @@ module cpu_top (
     data_memory dmem (
         .clk        (clk),
         .mem_read   (mem_read),
-        .mem_write  (mem_write),
+        .mem_write  (mem_write & clk_en),
         .addr       (operand),
         .write_data (read_data1),
         .read_data  (mem_read_data)
@@ -166,13 +168,13 @@ module cpu_top (
     assign halt = (opcode == 4'b1111);
 
     // PC write enable (not on HALT)
-    assign pc_write = ~halt;
+    assign pc_write = clk_en & ~halt;
 
     // OUT port register
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             out_reg <= 4'b0;
-        else if (opcode == 4'b1110) // OUT
+        else if (clk_en && opcode == 4'b1110) // OUT
             out_reg <= read_data1;
     end
 
@@ -211,6 +213,10 @@ module cpu_top (
                     end
                 end
             end
+            f = $fopen(actual_path, "r");
+            if (f == 0) $fatal(1, "Cannot open ROM image: %s", actual_path);
+            $fclose(f);
+            for (integer i = 0; i < 16; i = i + 1) imem.rom[i] = 9'h000;
             $readmemh(actual_path, imem.rom);
         end
     endtask

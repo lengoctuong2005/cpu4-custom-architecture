@@ -10,13 +10,13 @@ module alu_4bit (
     output logic       carry
 );
 
-    always @(a, b, op) begin
+    always @* begin
         result  = 4'b0;
         carry   = 1'b0;
 
         case (op)
             3'b000: begin // ADD
-                {carry, result} = a + b;
+                {carry, result} = {1'b0, a} + {1'b0, b};
             end
             3'b001: begin // SUB (a - b)
                 // Chuẩn hóa cờ Carry: carry = 1  -> KHÔNG mượn (a >= b)
@@ -33,7 +33,7 @@ module alu_4bit (
                 result = a ^ b;
             end
             3'b101: begin // INC (a + 1)
-                {carry, result} = a + 1'b1;
+                {carry, result} = {1'b0, a} + 5'd1;
             end
             3'b110: begin // DEC (a - 1)
                 // Chuẩn hóa cờ Carry: carry = 1  -> KHÔNG mượn (a >= 1)

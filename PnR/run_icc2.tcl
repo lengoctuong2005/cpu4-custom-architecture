@@ -2,11 +2,15 @@
 # run_icc2.tcl  —  Physical Design CPU 4-bit (SAED32nm)
 # Chay:  cd PnR ; icc2_shell -f run_icc2.tcl
 #=========================================================
+file mkdir output
+file mkdir reports
+
 set fillers_ref "*/SHFILL128_RVT */SHFILL64_RVT */SHFILL3_RVT */SHFILL2_RVT */SHFILL1_RVT"
 set endcap_left "*/SHFILL2_RVT";  set endcap_right "*/SHFILL2_RVT"
 set endcap_top    "*/SHFILL3_RVT */SHFILL2_RVT */SHFILL1_RVT"
 set endcap_bottom "*/SHFILL3_RVT */SHFILL2_RVT */SHFILL1_RVT"
-set tapcell_ref "*/SHFILL3_RVT"
+# Tap cell must be a real well-tie cell from the PDK, not an assumed filler.
+# Add PDK-approved tap/endcap insertion and validate spacing before use.
 
 set_app_var search_path "../Lib/ndm"
 lappend search_path "../Lib/tech/milkyway"
@@ -47,7 +51,7 @@ read_parasitic_tech -layermap ../Lib/tech/milkyway/saed32nm_tf_itf_tluplus.map \
     -tlup ../Lib/tech/star_rcxt/saed32nm_1p9m_Cmin.tluplus -name minTLU
 set_attribute [get_layers {M1 M3 M5 M7 M9}] routing_direction horizontal
 set_attribute [get_layers {M2 M4 M6 M8}]    routing_direction vertical
-set_parasitic_parameters -late_spec minTLU -early_spec maxTLU
+set_parasitic_parameters -late_spec maxTLU -early_spec minTLU
 
 # --- Floorplan + placement ---
 initialize_floorplan -core_utilization 0.6 -core_offset {5}
@@ -76,7 +80,7 @@ set_app_options -name route.detail.antenna -value true
 route_auto
 route_opt
 
-# --- Signoff: filler + DRC/LVS ---
+# --- In-tool finishing/checks: NOT foundry signoff DRC/LVS ---
 set SH_FILLERS "*/SHFILL128_RVT */SHFILL64_RVT */SHFILL3_RVT */SHFILL2_RVT */SHFILL1_RVT"
 create_stdcell_fillers -lib_cells $SH_FILLERS
 connect_pg_net

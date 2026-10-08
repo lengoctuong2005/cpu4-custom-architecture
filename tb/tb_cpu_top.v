@@ -17,6 +17,7 @@ module tb_cpu_top;
 
     cpu_top uut (
         .clk      (clk),
+        .clk_en   (1'b1),
         .rst_n    (rst_n),
         .out_port (out_port),
         .halt_out (halt_out)
@@ -75,7 +76,7 @@ module tb_cpu_top;
                 $display("[FAIL] %s : timeout after %0d cycles", name, cyc);
                 fail_count = fail_count + 1;
             end else begin
-                $display("[PASS] %s : halt after %0d cycles, out_port=%0d (0x%h)",
+                $display("[INFO] %s : halt after %0d cycles, out_port=%0d (0x%h)",
                          name, cyc, out_port, out_port);
                 pass_count = pass_count + 1;
             end
@@ -96,7 +97,7 @@ module tb_cpu_top;
 
         // ---- MUL: 3 x 4 = 12, stored Mem[12]=12 ----
         run_demo("MUL", "sim/mul.hex", 4'd3, 4'd4, 1'b1);
-        if (!(out_port == 4'd12 && uut.dmem.ram[12] == 4'd12)) begin
+        if (out_port !== 4'd12 || uut.dmem.ram[12] !== 4'd12) begin
             $error("MUL VALUE CHECK FAILED: out_port=%0d Mem[12]=%0d",
                    out_port, uut.dmem.ram[12]);
             fail_count = fail_count + 1;
@@ -106,7 +107,7 @@ module tb_cpu_top;
 
         // ---- ADD: 5 + 7 = 12, stored Mem[12]=12 ----
         run_demo("ADD", "sim/prog.hex", 4'd5, 4'd7, 1'b1);
-        if (!(out_port == 4'd12 && uut.dmem.ram[12] == 4'd12)) begin
+        if (out_port !== 4'd12 || uut.dmem.ram[12] !== 4'd12) begin
             $error("ADD VALUE CHECK FAILED: out_port=%0d Mem[12]=%0d",
                    out_port, uut.dmem.ram[12]);
             fail_count = fail_count + 1;
@@ -143,7 +144,7 @@ module tb_cpu_top;
 
         // ---- FLAG: test flag_write with MOV in between ----
         run_demo("FLAG", "sim/flag_test.hex", 4'd0, 4'd0, 1'b0);
-        if (out_port != 4'd12) begin
+        if (out_port !== 4'd12) begin
             $error("FLAG VALUE CHECK FAILED: out_port=%0d, expected 12", out_port);
             fail_count = fail_count + 1;
         end else begin
@@ -151,7 +152,7 @@ module tb_cpu_top;
         end
 
         $display("========================================");
-        $display("RESULT: %0d PASS, %0d FAIL", pass_count, fail_count);
+        $display("RESULT: %0d demos halted, %0d failed checks", pass_count, fail_count);
         $display("========================================");
         if (fail_count == 0) begin
             $display("ALL TESTS PASSED");

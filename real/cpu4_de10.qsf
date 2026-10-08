@@ -33,3 +33,15 @@ set_location_assignment PIN_AD17 -to HEX1[3]
 set_location_assignment PIN_AE18 -to HEX1[4]
 set_location_assignment PIN_AE17 -to HEX1[5]
 set_location_assignment PIN_V17  -to HEX1[6]
+
+set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2012
+set_global_assignment -name SYSTEMVERILOG_FILE cpu4_de10.v
+set_global_assignment -name SYSTEMVERILOG_FILE cpu_top_fpga.v
+set_global_assignment -name SYSTEMVERILOG_FILE instruction_memory.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/alu_4bit.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/control_unit.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/cpu_top.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/data_memory.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/program_counter.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/register_file.v
+set_global_assignment -name SDC_FILE cpu_top_fpga.sdc

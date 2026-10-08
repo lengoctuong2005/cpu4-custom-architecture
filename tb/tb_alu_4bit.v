@@ -91,35 +91,15 @@ module tb_alu_4bit;
                 for (int i_b = 0; i_b < 16; i_b++) begin
                     logic [3:0] exp_r;
                     logic       exp_z, exp_n, exp_c;
-                    case (i_op[2:0])
-                        3'b000: begin // ADD
-                            {exp_c, exp_r} = i_a[3:0] + i_b[3:0];
-                        end
-                        3'b001: begin // SUB
-                            {exp_c, exp_r} = {1'b0, i_a[3:0]} + {1'b0, ~i_b[3:0]} + 5'b00001;
-                        end
-                        3'b010: begin // AND
-                            exp_r = i_a[3:0] & i_b[3:0];
-                            exp_c = 1'b0;
-                        end
-                        3'b011: begin // OR
-                            exp_r = i_a[3:0] | i_b[3:0];
-                            exp_c = 1'b0;
-                        end
-                        3'b100: begin // XOR
-                            exp_r = i_a[3:0] ^ i_b[3:0];
-                            exp_c = 1'b0;
-                        end
-                        3'b101: begin // INC
-                            {exp_c, exp_r} = i_a[3:0] + 1'b1;
-                        end
-                        3'b110: begin // DEC
-                            {exp_c, exp_r} = {1'b0, i_a[3:0]} + {1'b0, ~4'b0001} + 5'b00001;
-                        end
-                        3'b111: begin // PASSTHRU
-                            exp_r = i_b[3:0];
-                            exp_c = 1'b0;
-                        end
+                    case (i_op)
+                        0: begin exp_r = (i_a + i_b) % 16; exp_c = (i_a + i_b >= 16); end
+                        1: begin exp_r = (i_a - i_b) & 15; exp_c = (i_a >= i_b); end
+                        2: begin exp_r = i_a & i_b; exp_c = 0; end
+                        3: begin exp_r = i_a | i_b; exp_c = 0; end
+                        4: begin exp_r = i_a ^ i_b; exp_c = 0; end
+                        5: begin exp_r = (i_a + 1) % 16; exp_c = (i_a == 15); end
+                        6: begin exp_r = (i_a - 1) & 15; exp_c = (i_a >= 1); end
+                        7: begin exp_r = i_b; exp_c = 0; end
                     endcase
                     exp_z = (exp_r == 4'b0);
                     exp_n = exp_r[3];

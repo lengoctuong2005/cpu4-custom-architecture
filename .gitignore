@@ -81,3 +81,6 @@ Thumbs.db
 AGENTS.md
 RULES_MANIFEST.md
 SKILLS_MANIFEST.md
+
+# Deep verification/synthesis outputs are regenerated, not source.
+build/

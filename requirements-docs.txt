@@ -1,0 +1,2 @@
+# Optional only: PDF generation; verification does not require these packages.
+reportlab>=4,<5
