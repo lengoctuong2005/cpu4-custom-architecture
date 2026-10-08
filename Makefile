@@ -40,13 +40,14 @@ UNIT_RF_OUT = unit_rf_tb.out
 UNIT_CU_OUT = unit_cu_tb.out
 UNIT_DM_OUT = unit_dm_tb.out
 
-.PHONY: all compile run test alu unit verify synth wave wave-alu asm pysim clean sim
+.PHONY: all compile run test alu unit verify synth learning-flags software extra differential mutation wave wave-alu asm pysim clean sim
 
 all: run
 sim: run
 
 synth:
-	yosys tools/synth.ys
+	mkdir -p build/synthesis
+	yosys -l build/synthesis/yosys.log tools/synth.ys
 
 compile:
 	$(IVERILOG) -o $(OUT) $(CPU_SRC)
@@ -70,7 +71,7 @@ unit:
 
 test: run alu
 
-verify: asm unit test pysim
+verify: asm unit test pysim software extra differential mutation learning-flags
 
 wave: run
 	$(GTKWAVE) $(VCD)
@@ -98,3 +99,20 @@ ifeq ($(OS),Windows_NT)
 else
 	-rm -f $(CLEANFILES)
 endif
+
+# Deterministic deep verification. Any mismatch/nonzero command fails make.
+software:
+	$(PYTHON) -m unittest discover -s tests -v
+
+extra:
+	$(PYTHON) tests/run_extra_rtl.py
+
+differential:
+	$(PYTHON) tests/differential.py
+
+mutation:
+	$(PYTHON) tests/mutation_smoke.py
+
+learning-flags:
+	mkdir -p build/verification
+	$(PYTHON) tests/flags_math.py

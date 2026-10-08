@@ -1,5 +1,9 @@
+# Generic synthesis with actual default Fibonacci boot ROM.
+# Requires native Yosys/ABC; not a PDK-mapped timing/signoff claim.
 read_verilog -sv rtl/alu_4bit.v rtl/control_unit.v rtl/data_memory.v rtl/instruction_memory.v rtl/program_counter.v rtl/register_file.v rtl/cpu_top.v
+hierarchy -check -top cpu_top
 synth -top cpu_top
+check -assert
 stat
-write_verilog sim/gate_level_netlist.v
-show -format svg -prefix sim/gate_level_schematic cpu_top
+write_json build/synthesis/cpu_top.json
+write_verilog -noattr build/synthesis/cpu_top.v

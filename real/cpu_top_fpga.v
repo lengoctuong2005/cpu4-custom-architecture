@@ -1,145 +1,59 @@
 `timescale 1ns / 1ps
-
-module cpu_top_fpga (
-    input  logic       CLOCK_50,       // Xung clock 50MHz onboard
-    input  logic [1:0] KEY,            // KEY[0] = Reset (active low), KEY[1] = Step Clock (active low)
-    input  logic [0:0] SW,             // SW[0] = Mode Select (1: Auto clock 1Hz, 0: Manual step clock)
-    output logic [9:0] LEDR,           // LEDR[3:0] = Out Port, LEDR[4] = Halt, LEDR[8:5] = Debug R0, LEDR[9] = Current Clock
-    output logic [6:0] HEX0,           // HEX0 = Hien thi out_port tren Led 7 doan (active low)
-    output logic [6:0] HEX1            // HEX1 = Hien thi debug_r0 tren Led 7 doan (active low)
+// One real clock domain. Buttons/mode are synchronized; execution uses clk_en.
+module cpu_top_fpga #(
+    parameter integer AUTO_CYCLES = 50_000_000,
+    parameter integer DEBOUNCE_CYCLES = 500_000
+)(
+    input logic CLOCK_50,
+    input logic [1:0] KEY,
+    input logic [0:0] SW,
+    output logic [9:0] LEDR,
+    output logic [6:0] HEX0, HEX1
 );
-
-    // Day cac tin hieu dieu khien va reset
-    logic fpga_clk;
-    logic fpga_rst_n;
-    logic fpga_step_clk;
-    logic fpga_mode_select;
-
-    assign fpga_clk         = CLOCK_50;
-    assign fpga_rst_n       = KEY[0];
-    assign fpga_step_clk     = KEY[1];
-    assign fpga_mode_select = SW[0];
-
-    // 1. Bo chia tan so (Clock Divider): 50MHz -> 1Hz
-    logic [25:0] clk_div;
-    logic        clk_1hz;
-    always_ff @(posedge fpga_clk or negedge fpga_rst_n) begin
-        if (!fpga_rst_n) begin
-            clk_div <= 26'd0;
-            clk_1hz <= 1'b0;
-        end else begin
-            if (clk_div == 26'd24_999_999) begin
-                clk_div <= 26'd0;
-                clk_1hz <= ~clk_1hz;
-            end else begin
-                clk_div <= clk_div + 1;
-            end
+    localparam integer AW = (AUTO_CYCLES < 2) ? 1 : $clog2(AUTO_CYCLES);
+    localparam integer DW = (DEBOUNCE_CYCLES < 2) ? 1 : $clog2(DEBOUNCE_CYCLES);
+    (* async_reg = "true" *) logic [1:0] reset_sync;
+    (* async_reg = "true" *) logic [1:0] key_sync, mode_sync;
+    wire rst_n = reset_sync[1];
+    always_ff @(posedge CLOCK_50 or negedge KEY[0])
+        if (!KEY[0]) reset_sync <= 2'b00;
+        else reset_sync <= {reset_sync[0],1'b1};
+    always_ff @(posedge CLOCK_50 or negedge rst_n)
+        if (!rst_n) begin key_sync<=2'b11; mode_sync<=2'b00; end
+        else begin key_sync<={key_sync[0],KEY[1]}; mode_sync<={mode_sync[0],SW[0]}; end
+    logic [DW-1:0] debounce_count;
+    logic key_clean, key_previous;
+    always_ff @(posedge CLOCK_50 or negedge rst_n) begin
+        if (!rst_n) begin debounce_count<='0; key_clean<=1'b1; key_previous<=1'b1; end
+        else begin
+            key_previous<=key_clean;
+            if (key_sync[1]==key_clean) debounce_count<='0;
+            else if (debounce_count==DEBOUNCE_CYCLES-1) begin
+                key_clean<=key_sync[1]; debounce_count<='0;
+            end else debounce_count<=debounce_count+1'b1;
         end
     end
-
-    // 2. Mach loc nhieu nut nhan (Debouncer) cho KEY[1] (step clock)
-    // Lay mau o tan so 1kHz (50MHz / 50_000)
-    logic [15:0] debounce_div;
-    logic        sample_tick;
-    always_ff @(posedge fpga_clk or negedge fpga_rst_n) begin
-        if (!fpga_rst_n) begin
-            debounce_div <= 16'd0;
-            sample_tick  <= 1'b0;
-        end else begin
-            if (debounce_div == 16'd49_999) begin
-                debounce_div <= 16'd0;
-                sample_tick  <= 1'b1;
-            end else begin
-                debounce_div <= debounce_div + 1;
-                sample_tick  <= 1'b0;
-            end
-        end
-    end
-
-    logic [2:0] button_shift;
-    always_ff @(posedge fpga_clk or negedge fpga_rst_n) begin
-        if (!fpga_rst_n) begin
-            button_shift <= 3'b111;
-        end else if (sample_tick) begin
-            button_shift <= {button_shift[1:0], fpga_step_clk};
-        end
-    end
-
-    // Phat hien canh xuong cua nut nhan (Key pressed)
-    logic step_clk_pressed;
-    assign step_clk_pressed = (button_shift[2:1] == 2'b10);
-
-    // 3. Xung clock cho CPU: tao bang thanh ghi dong bo tren fpga_clk (50MHz)
-    logic cpu_clk_reg;
-    always_ff @(posedge fpga_clk or negedge fpga_rst_n) begin
-        if (!fpga_rst_n) begin
-            cpu_clk_reg <= 1'b0;
-        end else if (fpga_mode_select) begin
-            cpu_clk_reg <= clk_1hz;
-        end else if (step_clk_pressed) begin
-            cpu_clk_reg <= ~cpu_clk_reg;
-        end
-    end
-    logic cpu_clk;
-    assign cpu_clk = cpu_clk_reg;
-
-    // Duong truyen tin hieu tu CPU
-    logic [3:0] cpu_out_port;
-    logic       cpu_halt_out;
-    logic [3:0] cpu_debug_r0;
-
-    // Instantiation cua CPU top
-    cpu_top cpu_inst (
-        .clk      (cpu_clk),
-        .rst_n    (fpga_rst_n),
-        .out_port (cpu_out_port),
-        .halt_out (cpu_halt_out),
-        .debug_r0 (cpu_debug_r0)
-    );
-
-    // 4. Anh xa sang LED
-    assign LEDR[3:0] = cpu_out_port;
-    assign LEDR[4]   = cpu_halt_out;
-    assign LEDR[8:5] = cpu_debug_r0;
-    assign LEDR[9]   = cpu_clk;
-
-    // 5. Giai ma LED 7 doan (Active Low)
-    hex_decoder_fpga hex0_dec (
-        .in  (cpu_out_port),
-        .out (HEX0)
-    );
-
-    hex_decoder_fpga hex1_dec (
-        .in  (cpu_debug_r0),
-        .out (HEX1)
-    );
-
+    logic [AW-1:0] auto_count;
+    wire auto_tick = (auto_count==AUTO_CYCLES-1);
+    always_ff @(posedge CLOCK_50 or negedge rst_n)
+        if (!rst_n) auto_count<='0;
+        else if (!mode_sync[1] || auto_tick) auto_count<='0;
+        else auto_count<=auto_count+1'b1;
+    wire cpu_enable = rst_n && (mode_sync[1] ? auto_tick : (key_previous && !key_clean));
+    wire [3:0] cpu_out, cpu_r0;
+    wire cpu_halt;
+    cpu_top cpu_inst(.clk(CLOCK_50),.clk_en(cpu_enable),.rst_n(rst_n),
+        .out_port(cpu_out),.halt_out(cpu_halt),.debug_r0(cpu_r0));
+    assign LEDR={cpu_enable,cpu_r0,cpu_halt,cpu_out};
+    hex_decoder_fpga h0(.in(cpu_out),.out(HEX0));
+    hex_decoder_fpga h1(.in(cpu_r0),.out(HEX1));
 endmodule
-
-// Module giai ma LED 7 doan tu 0 den F
-module hex_decoder_fpga (
-    input  logic [3:0] in,
-    output logic [6:0] out
-);
-    always_comb begin
-        case (in)
-            4'h0: out = 7'b1000000;
-            4'h1: out = 7'b1111001;
-            4'h2: out = 7'b0100100;
-            4'h3: out = 7'b0110000;
-            4'h4: out = 7'b0011001;
-            4'h5: out = 7'b0010010;
-            4'h6: out = 7'b0000010;
-            4'h7: out = 7'b1111000;
-            4'h8: out = 7'b0000000;
-            4'h9: out = 7'b0010000;
-            4'hA: out = 7'b0001000;
-            4'hB: out = 7'b0000011;
-            4'hC: out = 7'b1000110;
-            4'hD: out = 7'b0100001;
-            4'hE: out = 7'b0000110;
-            4'hF: out = 7'b0001110;
-            default: out = 7'b1111111;
-        endcase
-    end
+module hex_decoder_fpga(input logic [3:0] in,output logic [6:0] out);
+    always @* case(in)
+        0:out=7'b1000000; 1:out=7'b1111001; 2:out=7'b0100100; 3:out=7'b0110000;
+        4:out=7'b0011001; 5:out=7'b0010010; 6:out=7'b0000010; 7:out=7'b1111000;
+        8:out=7'b0000000; 9:out=7'b0010000; 10:out=7'b0001000; 11:out=7'b0000011;
+        12:out=7'b1000110; 13:out=7'b0100001; 14:out=7'b0000110; 15:out=7'b0001110;
+        default:out=7'b1111111;
+    endcase
 endmodule

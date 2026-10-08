@@ -1,32 +1,25 @@
-name: CI Regression Testsuite
-
+name: CPU4 v1 reproducible verification
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
-  simulation:
-    name: RTL & Behavioral Verification
+  verification:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install EDA Tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y iverilog python3 build-essential
-
-      - name: Assemble Programs from Source
-        run: make asm
-
-      - name: Run Module Unit Tests
-        run: make unit
-
-      - name: Run End-to-End CPU & Exhaustive ALU Regression
-        run: make test
-
-      - name: Run Cycle-Accurate Python Reference Model
-        run: make pysim
+      - uses: actions/checkout@v4
+      - name: Install open tools
+        run: sudo apt-get update && sudo apt-get install -y iverilog yosys python3
+      - name: Run functional, negative and differential checks
+        run: make verify
+      - name: Generated ROM images must match tracked images
+        run: git diff --exit-code -- sim/prog.hex sim/mul.hex sim/fib.hex sim/flag_test.hex
+      - name: Synthesis smoke test (not ASIC signoff)
+        run: make synth
+      - name: Upload evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpu4-verification
+          path: build/
