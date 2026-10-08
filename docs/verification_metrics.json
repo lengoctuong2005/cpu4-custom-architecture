@@ -14,8 +14,8 @@
   "tns_drv": "Max TNS=0,00ns. Sau ECO không còn slew/cap/pulse violations được báo cáo trong mẫu này; reset removal chưa được sửa.",
   "critical_path": "_686_ Q (PC flop) → ROM/decode → halt_out, max slack +8,38ns sau ECO. Không đại diện LOAD của ISA tổng quát.",
   "sta_run_status": "COMPLETED WITH FINDING: reset removal −0,26ns vẫn VIOLATED; không blanket false-path để che. Không physical signoff.",
-  "pr_url": "https://github.com/lengoctuong2005/cpu4-custom-architecture/tree/audit/cpu4-v1-verified-2026-10-08",
-  "source_commit": "Sẽ ghi source commit sau khi push; baseline 5f2e19d; đối chiếu source hashes",
+  "pr_url": "https://github.com/lengoctuong2005/cpu4-custom-architecture/pull/1",
+  "source_commit": "1ed737eec51ea5223f9868a485b161d9b44c97b6 (RTL/tests; metadata PDF được cập nhật sau)",
   "baseline_commit": "5f2e19d687a3b77410542dc3828f8fbe8a98f3bd",
   "differential": {
     "status": "PASS",

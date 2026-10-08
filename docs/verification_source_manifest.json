@@ -39,7 +39,7 @@
     "tests/run_synthesis.py": "d29705278258a41274d4ae1f8d2007425e954184bde1ef4ea0961e9cc1d0d607",
     "tests/test_software.py": "a83558681c348950a5efaf8ce8b4576ad61928a287da35dd0b3c10cead8c2082",
     "tools/assembler.py": "ef08c7db53ece419af43c4e82fef0c831af3752a9f56c7c66c3b583f03ad0a5d",
-    "tools/build_learning_pdf.py": "1ecba4a1bb01b74f8ce967aed906ca3b90fcd0b7393316f96944368947022761",
+    "tools/build_learning_pdf.py": "1e0fb0a79f9d0997d3ce1de907a53511f56f5b8560a4b64c4c5e17807d909537",
     "tools/isa.py": "5237684d45a9d2aee4133812cdacf0e4a25b14f395e218c6c77b131b7bec42dc",
     "tools/make_report_html.py": "94cbdacef81af3af71972a94edd0dd9e79637f2795db44256279abf5fd4bdac5",
     "tools/make_report_pdf.py": "4e249ab8aefab6f205629940e31fad4b1ece45cb5e0cada77fb768312f3beafd",

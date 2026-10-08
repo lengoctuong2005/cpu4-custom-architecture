@@ -1,7 +1,10 @@
 # Executed verification audit — 2026-10-08
 
 Baseline: `5f2e19d687a3b77410542dc3828f8fbe8a98f3bd`.
-Patch branch: `audit/cpu4-v1-verified-2026-10-08`. See
+Patch branch: `audit/cpu4-v1-verified-2026-10-08`.
+[Pull request #1](https://github.com/lengoctuong2005/cpu4-custom-architecture/pull/1).
+RTL/test source commit: `1ed737eec51ea5223f9868a485b161d9b44c97b6`;
+subsequent commits update publication metadata/PDF layout, not tested RTL. See
 [metrics](verification_metrics.json), [source hashes](verification_source_manifest.json),
 and [technical learning corrections](learning_review.md).
 

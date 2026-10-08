@@ -346,7 +346,7 @@ table(['Baseline đã quan sát','Sửa và test hồi quy'],[
 ('ROM generic là NOP hằng','Default ROM Fibonacci chứa chương trình khi synthesis; đủ16 từ khớp assembler; boot without helper PASS.'),
 ('FPGA dùng generated/button-controlled clock','Core thêm clk_en; toàn bộ side effects gated. CLOCK_50 duy nhất; sync/debounce inputs; one press/one enable.'),
 ('README/SDC/ICC2 nói quá hoặc sai mapping','README phân biệt verified/template; bỏ blanket false-path reset; min/max I/O; late=maxTLU, early=minTLU.')],[209,278])
-p('Bốn demo gốc đã PASS; bản sửa không được mô tả như vừa cứu một ALU sai. Lỗi chính nằm ở toolchain edge cases, mức bằng chứng, ROM synthesis và interface clock wrapper. Một số chỗ đã có sửa ở baseline mới hơn kế hoạch Notion, nên audit này dùng code hiện tại làm chuẩn.')
+p('Bốn demo gốc đã PASS; bản sửa không được mô tả như vừa cứu một ALU sai. Lỗi chính nằm ở toolchain edge cases, mức bằng chứng, ROM synthesis và interface clock wrapper. Một số chỗ đã có sửa ở baseline mới hơn kế hoạch cũ, nên audit này dùng code hiện tại làm chuẩn.')
 p('load_program helper nay báo lỗi mở file và xóa ROM trước khi nạp ảnh ngắn, tránh instruction cũ còn sót. Helper vẫn bị loại khi synthesis. RAM reset/ASIC power-up và PDK tap insertion vẫn chưa được giải quyết bằng các test logic này.')
 
 page('7.3 • Differential: kiểm gì ở mỗi cạnh?')
@@ -382,7 +382,7 @@ h('Phạm vi formal')
 p('equiv_make + equiv_simple + equiv_status -assert chứng minh 4 result bits + Z + N + carry =7 output bit tương đương giữa ALU baseline và ALU sửa width. Đây là proof combinational cho ALU, không phải formal proof toàn CPU, ROM boot, clock wrapper hoặc gate→PnR.')
 h('Artifact bắt buộc')
 code('make synth\nLIBERTY=/path/to/Nangate_typical.lib \\\n  python tests/run_synthesis.py\n# Logs + JSON + netlist phai ton tai; khong chi xem exit0.')
-p('Warnings còn lại: legacy translate_off và scan-cell expressions không dùng bởi netlist. Cell models thiếu function được bỏ qua chỉ khi không dùng; gate test kiểm tra đủ models cho mọi cell instantiated. Lần thử Yosys WASM tới ABC không tạo artifact dù exit0; không tính là PASS. Vì vậy audit kiểm tra output files và dùng native Yosys cho mapping. Baseline no-ABC và ALU formal WASM có đủ output/proof, được ghi riêng.')
+p('Warnings còn lại: translate_off và scan/gating models không dùng. Gate test xác nhận mọi cell instantiated có model. Lần thử WASM ABC không tạo đủ artifact nên không tính PASS; native mapping, baseline no-ABC và formal ALU có output/proof riêng.','small')
 
 page('7.5 • STA minh họa: kết quả và giới hạn')
 p(METRICS['sta_intro'])
@@ -390,7 +390,7 @@ table(['Điều kiện / kết quả','Giá trị'],[
 ('Library','NangateOpenCellLibrary typical: 1,10V /25°C; time_unit=1ns; capacitance_unit=1fF.'),
 ('Clock / I/O giả định','Ideal clock T=10ns; Usetup0,2ns/Uhold0,05ns; I/O max1ns/min0,1ns; output load10fF.'),
 ('Setup worst slack',METRICS['setup_slack']),
-('Hold worst slack',METRICS['hold_slack']),
+('Min / hold / removal',METRICS['hold_slack']),
 ('TNS / electrical checks',METRICS['tns_drv']),
 ('Đường max xấu nhất trong report',METRICS['critical_path']),
 ('STA run status',METRICS['sta_run_status'])],[146,341])
@@ -405,7 +405,7 @@ p('SHA256 library: 8d540a4d4cf6d09d27c87ad067857a9c0c2eeb023ab7a56e058cd3113db4e
 page('7.6 • GitHub, tái tạo và phần chưa hoàn tất')
 p('<b>Nhánh:</b> audit/cpu4-v1-verified-2026-10-08. Không merge vào main trong lần audit này. Source, tests, CI, ROM/wrapper và tài liệu được giao qua pull request để review.')
 p('<b>Pull request:</b> <link href="'+METRICS['pr_url']+'" color="#146492">'+escape(METRICS['pr_url'])+'</link>')
-p('<b>Source commit kiểm thử:</b> '+METRICS['source_commit']+'. Source SHA256 và log trong evidence manifest giúp phân biệt code đã test với thay đổi sau này.')
+p('<b>RTL/test commit kiểm thử:</b> '+METRICS['source_commit']+'. Source SHA256 và log trong evidence manifest giúp phân biệt code đã test với thay đổi sau này.')
 h('Một pipeline, fail thật')
 code('git checkout audit/cpu4-v1-verified-2026-10-08\nmake verify\nmake synth\npip install -r requirements-docs.txt\npython tools/build_learning_pdf.py')
 p('CI được cập nhật để assemble, chạy test sâu, kiểm tra generated HEX và synthesis smoke; <b>local PASS không đồng nghĩa GitHub Actions đã xanh</b>. Xem trạng thái Actions ở PR và rerun theo runner/tool phiên bản đó.')
